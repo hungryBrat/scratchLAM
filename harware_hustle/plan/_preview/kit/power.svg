@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg  viewBox="0 0 1180 430" role="img" aria-label="Power distribution: mains reaches only the SMPS; 12 V enters the PCB through fuse F3 and the TVS, feeds P1-P3 to the three IBT-2 drivers and P4 to the D4184 valve driver; the LM2596 makes 5 V." xmlns="http://www.w3.org/2000/svg" width="1180" height="430"><title>Power distribution</title><style>
+svg{background:#fff;color:#111;font-family:'JetBrains Mono', ui-monospace, monospace}
+.t{font-size:12px;fill:#111}.ts{font-size:10.5px;fill:#444}.tb{font-size:12.5px;font-weight:700;fill:#111}
+.tbub{font-size:9.5px;font-weight:700;fill:#111}.io{font-size:10.5px;fill:#0b5a7a;font-weight:600}
+.ln{fill:none;stroke:#0b5a7a;stroke-width:3}.pw{fill:none;stroke:#7a3b0b;stroke-width:2.6}.wire{fill:none;stroke:#111;stroke-width:1.6}
+.sig{fill:none;stroke:#555;stroke-width:1.3;stroke-dasharray:5 4}.tr{fill:none;stroke:#111;stroke-width:1.4}
+.eq{fill:none;stroke:#111;stroke-width:2}.eq.thin{stroke-width:1.1}.pumpfill{fill:#fff}.vlv{fill:#fff;stroke:#111;stroke-width:1.6}
+.box{fill:#fff;stroke:#111;stroke-width:1.4}.box.hot{stroke:#b3261e}.res{fill:#fff;stroke:#111;stroke-width:1.4}
+.bub{fill:#fff;stroke:#111;stroke-width:1.5}.liq{fill:#0b5a7a;fill-opacity:.12}.dot{fill:#111}
+.fa{fill:#0b5a7a}.pa{fill:#7a3b0b}.ta{fill:#111}.elec{stroke:#b26b00;stroke-width:6}
+.st{fill:#fff;stroke:#111;stroke-width:1.5}.st.done{stroke:#2e7d4f;stroke-width:2.5}.st.stop{stroke:#b3261e}
+</style><rect width="100%" height="100%" fill="#fff"/>
+<rect x="20" y="30" width="150" height="52" rx="5" class="box hot"/>
+<text x="95.0" y="50.0" class="tb" text-anchor="middle">230 V AC mains</text>
+<text x="95.0" y="68.0" class="ts" text-anchor="middle">3-core cord, PE bonded</text>
+<rect x="20" y="150" width="150" height="64" rx="5" class="box"/>
+<text x="95.0" y="176.0" class="tb" text-anchor="middle">SMPS</text>
+<text x="95.0" y="194.0" class="ts" text-anchor="middle">12 V · 29 A</text>
+<path d="M95,82 L95,150" class="pw"/>
+<path d="M90,138 L95,150 L100,138 Z" class="pa"/>
+<text x="103" y="120" class="ts" text-anchor="start">L · N · PE only here</text>
+<rect x="280" y="140" width="240" height="84" rx="5" class="box"/>
+<text x="400.0" y="176.0" class="tb" text-anchor="middle">PCB 12V INPUT</text>
+<text x="400.0" y="194.0" class="ts" text-anchor="middle">fuse F3 ≥ 15 A · TVS · 1000 µF</text>
+<path d="M170,182 L280,182" class="pw"/>
+<path d="M268,177 L280,182 L268,187 Z" class="pa"/>
+<text x="225" y="174" class="ts" text-anchor="middle">16 AWG red/black</text>
+<rect x="580" y="30" width="150" height="52" rx="5" class="box"/>
+<text x="655.0" y="50.0" class="tb" text-anchor="middle">P1 · P2 · P3</text>
+<text x="655.0" y="68.0" class="ts" text-anchor="middle">12 V + 470 µF each</text>
+<rect x="580" y="160" width="150" height="52" rx="5" class="box"/>
+<text x="655.0" y="180.0" class="tb" text-anchor="middle">P4 / P5</text>
+<text x="655.0" y="198.0" class="ts" text-anchor="middle">12 V aux</text>
+<rect x="580" y="290" width="150" height="52" rx="5" class="box"/>
+<text x="655.0" y="310.0" class="tb" text-anchor="middle">LM2596 buck</text>
+<text x="655.0" y="328.0" class="ts" text-anchor="middle">5 V rail (VCC)</text>
+<path d="M520,160 L550,160 L550,56 L580,56" class="pw"/>
+<path d="M568,51 L580,56 L568,61 Z" class="pa"/>
+<path d="M520,186 L580,186" class="pw"/>
+<path d="M568,181 L580,186 L568,191 Z" class="pa"/>
+<path d="M520,210 L550,210 L550,316 L580,316" class="pw"/>
+<path d="M568,311 L580,316 L568,321 Z" class="pa"/>
+<rect x="790" y="20" width="170" height="72" rx="5" class="box"/>
+<text x="875.0" y="50.0" class="tb" text-anchor="middle">IBT-2 × 3</text>
+<text x="875.0" y="68.0" class="ts" text-anchor="middle">B+/B− 18 AWG from P1–P3</text>
+<path d="M730,56 L790,56" class="pw"/>
+<path d="M778,51 L790,56 L778,61 Z" class="pa"/>
+<rect x="1010" y="20" width="160" height="72" rx="5" class="box"/>
+<text x="1090.0" y="50.0" class="tb" text-anchor="middle">P-01 · P-02 · P-03</text>
+<text x="1090.0" y="68.0" class="ts" text-anchor="middle">M+/M− · 2.5–3.5 A each</text>
+<path d="M960,56 L1010,56" class="pw"/>
+<path d="M998,51 L1010,56 L998,61 Z" class="pa"/>
+<rect x="790" y="150" width="170" height="72" rx="5" class="box"/>
+<text x="875.0" y="180.0" class="tb" text-anchor="middle">D4184 MOSFET</text>
+<text x="875.0" y="198.0" class="ts" text-anchor="middle">flyback diode on coil</text>
+<path d="M730,186 L790,186" class="pw"/>
+<path d="M778,181 L790,186 L778,191 Z" class="pa"/>
+<rect x="1010" y="150" width="160" height="72" rx="5" class="box"/>
+<text x="1090.0" y="180.0" class="tb" text-anchor="middle">SOV-01 coil</text>
+<text x="1090.0" y="198.0" class="ts" text-anchor="middle">12 V, normally closed</text>
+<path d="M960,186 L1010,186" class="pw"/>
+<path d="M998,181 L1010,186 L998,191 Z" class="pa"/>
+<rect x="790" y="280" width="170" height="72" rx="5" class="box"/>
+<text x="875.0" y="310.0" class="tb" text-anchor="middle">ESP32 5V pin</text>
+<text x="875.0" y="328.0" class="ts" text-anchor="middle">on-board 3.3 V LDO</text>
+<path d="M730,316 L790,316" class="pw"/>
+<path d="M778,311 L790,316 L778,321 Z" class="pa"/>
+<rect x="1010" y="280" width="160" height="72" rx="5" class="box"/>
+<text x="1090.0" y="310.0" class="tb" text-anchor="middle">FT-01 red wire</text>
+<text x="1090.0" y="328.0" class="ts" text-anchor="middle">YF-S401 5 V supply</text>
+<path d="M960,316 L1010,316" class="pw"/>
+<path d="M998,311 L1010,316 L998,321 Z" class="pa"/>
+<text x="875" y="372" class="io" text-anchor="middle">3V3 → IBT-2 VCC (logic) ×3</text>
+<text x="590" y="410" class="t" text-anchor="middle">Starts are staggered ≥ 500 ms and ramped, so three pumps never draw inrush at once.</text>
+</svg>

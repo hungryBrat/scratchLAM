@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg  viewBox="0 0 1280 780" role="img" aria-label="P&amp;ID: TK-01 feeds P-01 through SOV-01 and the equal tee into the sump TK-02; P-02 returns sump fluid through BV-02 and FT-01 to TK-01; the flush tank TK-03 joins at the tee through BV-01 and P-03." xmlns="http://www.w3.org/2000/svg" width="1280" height="780"><title>LAM Stage 2 rig P&amp;ID</title><style>
+svg{background:#fff;color:#111;font-family:'JetBrains Mono', ui-monospace, monospace}
+.t{font-size:12px;fill:#111}.ts{font-size:10.5px;fill:#444}.tb{font-size:12.5px;font-weight:700;fill:#111}
+.tbub{font-size:9.5px;font-weight:700;fill:#111}.io{font-size:10.5px;fill:#0b5a7a;font-weight:600}
+.ln{fill:none;stroke:#0b5a7a;stroke-width:3}.pw{fill:none;stroke:#7a3b0b;stroke-width:2.6}.wire{fill:none;stroke:#111;stroke-width:1.6}
+.sig{fill:none;stroke:#555;stroke-width:1.3;stroke-dasharray:5 4}.tr{fill:none;stroke:#111;stroke-width:1.4}
+.eq{fill:none;stroke:#111;stroke-width:2}.eq.thin{stroke-width:1.1}.pumpfill{fill:#fff}.vlv{fill:#fff;stroke:#111;stroke-width:1.6}
+.box{fill:#fff;stroke:#111;stroke-width:1.4}.box.hot{stroke:#b3261e}.res{fill:#fff;stroke:#111;stroke-width:1.4}
+.bub{fill:#fff;stroke:#111;stroke-width:1.5}.liq{fill:#0b5a7a;fill-opacity:.12}.dot{fill:#111}
+.fa{fill:#0b5a7a}.pa{fill:#7a3b0b}.ta{fill:#111}.elec{stroke:#b26b00;stroke-width:6}.probe{fill:#b26b00}
+.zone{fill:#0b5a7a;fill-opacity:.05}.gnd{fill:none;stroke:#555;stroke-width:1.3}.pwt{font-size:10.5px;font-weight:600;fill:#7a3b0b}
+.st{fill:#fff;stroke:#111;stroke-width:1.5}.st.done{stroke:#2e7d4f;stroke-width:2.5}.st.stop{stroke:#b3261e}
+</style><rect width="100%" height="100%" fill="#fff"/>
+<rect x="70" y="175" width="180" height="125" class="liq"/>
+<path d="M70,120 V300 H250 V120" class="eq"/>
+<path d="M62,120 H78 M242,120 H258" class="eq"/>
+<text x="172" y="233.5" class="tb" text-anchor="middle">TK-01</text>
+<text x="172" y="250.5" class="ts" text-anchor="middle">Process tank · 10 L</text>
+<text x="172" y="265.5" class="ts" text-anchor="middle">on +0.3 m stand</text>
+<rect x="980" y="470" width="180" height="130" class="liq"/>
+<path d="M980,400 V600 H1160 V400" class="eq"/>
+<path d="M972,400 H988 M1152,400 H1168" class="eq"/>
+<text x="1070.0" y="531.0" class="tb" text-anchor="middle">TK-02</text>
+<text x="1070.0" y="548.0" class="ts" text-anchor="middle">Sump · 4.2 L</text>
+<rect x="70" y="520" width="160" height="130" class="liq"/>
+<path d="M70,480 V650 H230 V480" class="eq"/>
+<path d="M62,480 H78 M222,480 H238" class="eq"/>
+<text x="162" y="581.0" class="tb" text-anchor="middle">TK-03</text>
+<text x="162" y="598.0" class="ts" text-anchor="middle">Flush tank · 4.2 L</text>
+<text x="162" y="613.0" class="ts" text-anchor="middle">on +0.3 m stand</text>
+<path d="M88,290 L88,96 L40,96 L40,380 L164,380" class="ln"/>
+<path d="M196,380 L519,380" class="ln"/>
+<path d="M35,234 L40,246 L45,234 Z" class="fa"/>
+<path d="M94,375 L106,380 L94,385 Z" class="fa"/>
+<path d="M244,375 L256,380 L244,385 Z" class="fa"/>
+<text x="320" y="372" class="ts" text-anchor="middle">L-101 · 8×5 PU</text>
+<path d="M164,369 L180,380 L164,391 Z M196,369 L180,380 L196,391 Z" class="vlv"/>
+<path d="M180,380 V354" class="eq"/>
+<rect x="168" y="334" width="24" height="20" class="box"/>
+<text x="180" y="348.5" class="tb" text-anchor="middle">S</text>
+<text x="180" y="324" class="tb" text-anchor="middle">SOV-01</text>
+<text x="180" y="407" class="ts" text-anchor="middle">NC · fail-closed</text>
+<text x="200" y="344" class="io" text-anchor="start">G27</text>
+<circle cx="440" cy="380" r="5" class="dot"/>
+<text x="452" y="400" class="ts" text-anchor="start">TEE-01</text>
+<circle cx="545" cy="380" r="26" class="eq pumpfill"/>
+<path d="M537,369 L557,380 L537,391 Z" class="fa"/>
+<text x="545" y="425" class="tb" text-anchor="middle">P-01</text>
+<text x="545" y="441" class="ts" text-anchor="middle">diaphragm · d1</text>
+<circle cx="545" cy="318" r="19" class="bub"/>
+<path d="M526,318 H564" class="eq thin"/>
+<text x="545" y="314" class="tbub" text-anchor="middle">IT</text>
+<text x="545" y="331" class="tbub" text-anchor="middle">01</text>
+<text x="569" y="322" class="io" text-anchor="start">G15</text>
+<path d="M545,337 L545,354" class="sig"/>
+<path d="M571,380 L1030,380 L1030,445" class="ln"/>
+<path d="M794,375 L806,380 L794,385 Z" class="fa"/>
+<path d="M1025,419 L1030,431 L1035,419 Z" class="fa"/>
+<text x="800" y="372" class="ts" text-anchor="middle">L-102 · 8×5 PU</text>
+<path d="M1160,450 H1140" class="eq"/><circle cx="1133" cy="450" r="6" class="eq pumpfill"/>
+<path d="M1160,450 L1196,450" class="sig"/>
+<circle cx="1216" cy="450" r="19" class="bub"/>
+<path d="M1197,450 H1235" class="eq thin"/>
+<text x="1216" y="446" class="tbub" text-anchor="middle">LSH</text>
+<text x="1216" y="463" class="tbub" text-anchor="middle">01</text>
+<text x="1216" y="483" class="io" text-anchor="middle">G35</text>
+<text x="1216" y="500" class="ts" text-anchor="middle">open = high</text>
+<text x="1216" y="514" class="ts" text-anchor="middle">fail-safe</text>
+<path d="M1120,588 L1120,250 L1076,250" class="ln"/>
+<path d="M1115,336 L1120,324 L1125,336 Z" class="fa"/>
+<path d="M1044,239 L1060,250 L1044,261 Z M1076,239 L1060,250 L1076,261 Z" class="vlv"/>
+<path d="M1060,250 V232 M1050,232 H1070" class="eq"/>
+<text x="1060" y="224" class="tb" text-anchor="middle">BV-03</text>
+<text x="1060" y="277" class="ts" text-anchor="middle">NO · isolation</text>
+<path d="M1044,250 L976,250" class="ln"/>
+<path d="M1016,245 L1004,250 L1016,255 Z" class="fa"/>
+<circle cx="950" cy="250" r="26" class="eq pumpfill"/>
+<path d="M958,239 L938,250 L958,261 Z" class="fa"/>
+<text x="950" y="295" class="tb" text-anchor="middle">P-02</text>
+<text x="950" y="311" class="ts" text-anchor="middle">diaphragm · d2 = 100%</text>
+<circle cx="950" cy="186" r="19" class="bub"/>
+<path d="M931,186 H969" class="eq thin"/>
+<text x="950" y="182" class="tbub" text-anchor="middle">IT</text>
+<text x="950" y="199" class="tbub" text-anchor="middle">02</text>
+<text x="974" y="190" class="io" text-anchor="start">G36</text>
+<path d="M950,205 L950,224" class="sig"/>
+<path d="M924,250 L836,250" class="ln"/>
+<path d="M886,245 L874,250 L886,255 Z" class="fa"/>
+<path d="M804,239 L820,250 L804,261 Z M836,239 L820,250 L836,261 Z" class="vlv"/>
+<path d="M820,250 V232 M810,232 H830" class="eq"/>
+<text x="820" y="224" class="tb" text-anchor="middle">BV-02</text>
+<text x="820" y="277" class="ts" text-anchor="middle">throttle · 0–90° dial</text>
+<path d="M804,250 L716,250" class="ln"/>
+<path d="M766,245 L754,250 L766,255 Z" class="fa"/>
+<rect x="644" y="238" width="72" height="24" rx="3" class="box"/>
+<circle cx="680" cy="250" r="7" class="eq thin"/><path d="M673,250 H687 M680,243 V257" class="eq thin"/>
+<path d="M680,238 L680,214" class="eq"/>
+<circle cx="680" cy="194" r="19" class="bub"/>
+<path d="M661,194 H699" class="eq thin"/>
+<text x="680" y="190" class="tbub" text-anchor="middle">FT</text>
+<text x="680" y="207" class="tbub" text-anchor="middle">01</text>
+<text x="704" y="198" class="io" text-anchor="start">G14 · ISR</text>
+<text x="680" y="280" class="ts" text-anchor="middle">≥10D in · ≥5D out</text>
+<path d="M644,250 L330,250 L330,60 L200,60 L200,140" class="ln"/>
+<path d="M486,245 L474,250 L486,255 Z" class="fa"/>
+<path d="M325,156 L330,144 L335,156 Z" class="fa"/>
+<path d="M271,55 L259,60 L271,65 Z" class="fa"/>
+<path d="M195,104 L200,116 L205,104 Z" class="fa"/>
+<text x="480" y="242" class="ts" text-anchor="middle">L-202 return · 8×5 PU</text>
+<text x="265" y="52" class="ts" text-anchor="middle">free discharge above liquid</text>
+<path d="M88,640 L88,460 L264,460" class="ln"/>
+<path d="M83,566 L88,554 L93,566 Z" class="fa"/>
+<path d="M264,449 L280,460 L264,471 Z M296,449 L280,460 L296,471 Z" class="vlv"/>
+<path d="M280,460 V442 M270,442 H290" class="eq"/>
+<text x="280" y="434" class="tb" text-anchor="middle"></text>
+<text x="280" y="492" class="tb" text-anchor="middle">BV-01</text>
+<text x="280" y="508" class="ts" text-anchor="middle">manual</text>
+<circle cx="280" cy="400" r="19" class="bub"/>
+<path d="M261,400 H299" class="eq thin"/>
+<text x="280" y="396" class="tbub" text-anchor="middle">ZSO</text>
+<text x="280" y="413" class="tbub" text-anchor="middle">01</text>
+<text x="256" y="404" class="io" text-anchor="end">G5</text>
+<path d="M280,419 L280,442" class="sig"/>
+<path d="M296,460 L354,460" class="ln"/>
+<circle cx="380" cy="460" r="26" class="eq pumpfill"/>
+<path d="M372,449 L392,460 L372,471 Z" class="fa"/>
+<text x="380" y="505" class="tb" text-anchor="middle">P-03</text>
+<text x="380" y="521" class="ts" text-anchor="middle">diaphragm · d3</text>
+<circle cx="380" cy="398" r="19" class="bub"/>
+<path d="M361,398 H399" class="eq thin"/>
+<text x="380" y="394" class="tbub" text-anchor="middle">IT</text>
+<text x="380" y="411" class="tbub" text-anchor="middle">03</text>
+<text x="356" y="402" class="io" text-anchor="end">G39</text>
+<path d="M380,417 L380,434" class="sig"/>
+<path d="M406,460 L440,460 L440,385" class="ln"/>
+<path d="M435,431 L440,419 L445,431 Z" class="fa"/>
+<text x="468" y="470" class="ts" text-anchor="start">L-301</text>
+<circle cx="96" cy="634" r="4" class="probe"/>
+<path d="M100,634 L262,634" class="sig"/>
+<circle cx="282" cy="634" r="19" class="bub"/>
+<path d="M263,634 H301" class="eq thin"/>
+<text x="282" y="630" class="tbub" text-anchor="middle">LSL</text>
+<text x="282" y="647" class="tbub" text-anchor="middle">03</text>
+<text x="282" y="667" class="io" text-anchor="middle">T0 · G4</text>
+<text x="282" y="682" class="ts" text-anchor="middle">probe at dip-tube inlet</text>
+<rect x="380" y="548" width="440" height="200" rx="6" class="box"/>
+<text x="600" y="572" class="tb" text-anchor="middle">UC-01 · ESP32 NodeMCU-32S (basic process control)</text>
+<text x="396" y="596" class="io" text-anchor="start">FQI-01</text>
+<text x="460" y="596" class="t" text-anchor="start">Q = a·f + b, mL/s and L/min, totalised litres</text>
+<text x="396" y="615" class="io" text-anchor="start">UY-01</text>
+<text x="460" y="615" class="t" text-anchor="start">sequence: Case 1 → Case 2 → safe OFF</text>
+<text x="396" y="634" class="io" text-anchor="start">FIC-01</text>
+<text x="460" y="634" class="t" text-anchor="start">P-02 flow PI loop (optional mode)</text>
+<text x="396" y="653" class="io" text-anchor="start">I-1</text>
+<text x="460" y="653" class="t" text-anchor="start">LSH-01 high: stop P-01 + P-03, close SOV-01</text>
+<text x="396" y="672" class="io" text-anchor="start">I-2</text>
+<text x="460" y="672" class="t" text-anchor="start">P-03 only into running P-01, SOV-01 closed</text>
+<text x="396" y="691" class="io" text-anchor="start">I-3</text>
+<text x="460" y="691" class="t" text-anchor="start">SOV-01 held closed while P-03 runs</text>
+<text x="396" y="710" class="io" text-anchor="start">I-4</text>
+<text x="460" y="710" class="t" text-anchor="start">P-02 trip: dry run or blocked discharge</text>
+<text x="396" y="729" class="io" text-anchor="start">HS-01</text>
+<text x="460" y="729" class="t" text-anchor="start">start / stop switch on G34</text>
+<text x="850" y="636" class="tb" text-anchor="start">NOTES</text>
+<text x="850" y="655" class="t" text-anchor="start">1  Dip tubes enter from the top; only LS-01 pierces a wall.</text>
+<text x="850" y="674" class="t" text-anchor="start">2  FT-01 after BV-02: never sees the 8.25 bar cut-off.</text>
+<text x="850" y="693" class="t" text-anchor="start">   (FT-01 rated 0.8 MPa)</text>
+<text x="850" y="712" class="t" text-anchor="start">3  TK-01, TK-03 raised ~0.3 m: flooded pump suction.</text>
+<text x="850" y="731" class="t" text-anchor="start">4  8×5 PU lines; 10×8 PU stubs at pump ports.</text>
+<text x="850" y="750" class="t" text-anchor="start">5  BV-02 is the throttling (needle) valve: the kit has none.</text>
+<path d="M40,712 L90,712" class="ln"/>
+<text x="98" y="716" class="t" text-anchor="start">process line, arrow = flow</text>
+<path d="M40,736 L90,736" class="sig"/>
+<text x="98" y="740" class="t" text-anchor="start">electrical signal</text>
+<text x="40" y="762" class="io" text-anchor="start">G14 = ESP32 GPIO wired to that instrument</text>
+</svg>

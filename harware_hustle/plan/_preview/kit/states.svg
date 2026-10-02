@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg  viewBox="0 0 1240 470" role="img" aria-label="Sequence state machine: one switch press runs Case 1, then Case 2, then a latched safe OFF; LS-01 high sends each case into a hold state; the switch stops everything from any state." xmlns="http://www.w3.org/2000/svg" width="1240" height="470"><title>Sequence state machine</title><style>
+svg{background:#fff;color:#111;font-family:'JetBrains Mono', ui-monospace, monospace}
+.t{font-size:12px;fill:#111}.ts{font-size:10.5px;fill:#444}.tb{font-size:12.5px;font-weight:700;fill:#111}
+.tbub{font-size:9.5px;font-weight:700;fill:#111}.io{font-size:10.5px;fill:#0b5a7a;font-weight:600}
+.ln{fill:none;stroke:#0b5a7a;stroke-width:3}.pw{fill:none;stroke:#7a3b0b;stroke-width:2.6}.wire{fill:none;stroke:#111;stroke-width:1.6}
+.sig{fill:none;stroke:#555;stroke-width:1.3;stroke-dasharray:5 4}.tr{fill:none;stroke:#111;stroke-width:1.4}
+.eq{fill:none;stroke:#111;stroke-width:2}.eq.thin{stroke-width:1.1}.pumpfill{fill:#fff}.vlv{fill:#fff;stroke:#111;stroke-width:1.6}
+.box{fill:#fff;stroke:#111;stroke-width:1.4}.box.hot{stroke:#b3261e}.res{fill:#fff;stroke:#111;stroke-width:1.4}
+.bub{fill:#fff;stroke:#111;stroke-width:1.5}.liq{fill:#0b5a7a;fill-opacity:.12}.dot{fill:#111}
+.fa{fill:#0b5a7a}.pa{fill:#7a3b0b}.ta{fill:#111}.elec{stroke:#b26b00;stroke-width:6}
+.st{fill:#fff;stroke:#111;stroke-width:1.5}.st.done{stroke:#2e7d4f;stroke-width:2.5}.st.stop{stroke:#b3261e}
+</style><rect width="100%" height="100%" fill="#fff"/>
+<rect x="20" y="40" width="140" height="58" rx="10" class="st"/>
+<text x="90.0" y="64" class="tb" text-anchor="middle">IDLE</text>
+<text x="90.0" y="82" class="ts" text-anchor="middle">all off, SOV closed</text>
+<rect x="220" y="40" width="160" height="58" rx="10" class="st"/>
+<text x="300.0" y="64" class="tb" text-anchor="middle">C1_START</text>
+<text x="300.0" y="82" class="ts" text-anchor="middle">zero currents 0.6 s</text>
+<rect x="450" y="40" width="180" height="58" rx="10" class="st"/>
+<text x="540.0" y="64" class="tb" text-anchor="middle">C1_RUN</text>
+<text x="540.0" y="82" class="ts" text-anchor="middle">P-02 d2 · P-01 d1</text>
+<rect x="800" y="40" width="200" height="58" rx="10" class="st"/>
+<text x="900.0" y="64" class="tb" text-anchor="middle">C1_HOLD_LSH</text>
+<text x="900.0" y="82" class="ts" text-anchor="middle">P-01 off, SOV closed</text>
+<path d="M160,69 L220,69" class="tr"/>
+<path d="M208,64 L220,69 L208,74 Z" class="ta"/>
+<text x="190" y="61" class="ts" text-anchor="middle">switch</text>
+<path d="M380,69 L450,69" class="tr"/>
+<path d="M438,64 L450,69 L438,74 Z" class="ta"/>
+<text x="415" y="61" class="ts" text-anchor="middle">P-02 on</text>
+<path d="M630,58 L800,58" class="tr"/>
+<path d="M788,53 L800,58 L788,63 Z" class="ta"/>
+<text x="715" y="50" class="ts" text-anchor="middle">LS-01 high ≥ lshon</text>
+<path d="M800,82 L630,82" class="tr"/>
+<path d="M642,77 L630,82 L642,87 Z" class="ta"/>
+<text x="715" y="100" class="ts" text-anchor="middle">clear ≥ lshoff + p1off</text>
+<rect x="20" y="250" width="170" height="58" rx="10" class="st"/>
+<text x="105.0" y="274" class="tb" text-anchor="middle">C2_ISOLATE</text>
+<text x="105.0" y="292" class="ts" text-anchor="middle">P-01 off, SOV closed</text>
+<rect x="250" y="250" width="180" height="58" rx="10" class="st"/>
+<text x="340.0" y="274" class="tb" text-anchor="middle">C2_OPEN_BV01</text>
+<text x="340.0" y="292" class="ts" text-anchor="middle">LED fast blink</text>
+<rect x="520" y="250" width="170" height="58" rx="10" class="st"/>
+<text x="605.0" y="274" class="tb" text-anchor="middle">C2_FLUSH</text>
+<text x="605.0" y="292" class="ts" text-anchor="middle">P-01 d1f + P-03 d3</text>
+<rect x="800" y="250" width="200" height="58" rx="10" class="st"/>
+<text x="900.0" y="274" class="tb" text-anchor="middle">C2_HOLD_LSH</text>
+<text x="900.0" y="292" class="ts" text-anchor="middle">P-01 + P-03 off</text>
+<rect x="1050" y="250" width="180" height="58" rx="10" class="st done"/>
+<text x="1140.0" y="274" class="tb" text-anchor="middle">COMPLETE</text>
+<text x="1140.0" y="292" class="ts" text-anchor="middle">latched safe OFF</text>
+<path d="M540,98 L540,180 L105,180 L105,250" class="tr"/>
+<path d="M100,238 L105,250 L110,238 Z" class="ta"/>
+<text x="330" y="172" class="ts" text-anchor="middle">t ≥ tc1 while not holding</text>
+<path d="M190,279 L250,279" class="tr"/>
+<path d="M238,274 L250,279 L238,284 Z" class="ta"/>
+<text x="220" y="271" class="ts" text-anchor="middle">1 s</text>
+<path d="M430,279 L520,279" class="tr"/>
+<path d="M508,274 L520,279 L508,284 Z" class="ta"/>
+<text x="475" y="271" class="ts" text-anchor="middle">ZSO-01 or tbv</text>
+<path d="M690,268 L800,268" class="tr"/>
+<path d="M788,263 L800,268 L788,273 Z" class="ta"/>
+<text x="745" y="260" class="ts" text-anchor="middle">LS-01 high</text>
+<path d="M800,292 L690,292" class="tr"/>
+<path d="M702,287 L690,292 L702,297 Z" class="ta"/>
+<text x="745" y="310" class="ts" text-anchor="middle">clear</text>
+<path d="M605,308 L605,360 L1140,360 L1140,308" class="tr"/>
+<path d="M1135,320 L1140,308 L1145,320 Z" class="ta"/>
+<text x="870" y="378" class="ts" text-anchor="middle">TK-03 empty: LSL-03 ≥ 0.3 s, or IT-03 dry ≥ 0.5 s, or tfmax</text>
+<rect x="1050" y="40" width="180" height="58" rx="10" class="st stop"/>
+<text x="1140" y="64" class="tb" text-anchor="middle">STOPPED</text>
+<text x="1140" y="82" class="ts" text-anchor="middle">switch, any running state</text>
+<text x="620" y="430" class="t" text-anchor="middle">P-02 stays at 100% from C1_RUN until COMPLETE; interlocks I-1…I-4 sit between this logic and the outputs.</text>
+<text x="620" y="450" class="t" text-anchor="middle">COMPLETE brakes all pumps and keeps SOV-01 de-energised; the next switch press returns to IDLE.</text>
+</svg>

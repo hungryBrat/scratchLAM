@@ -1,0 +1,987 @@
+<title>Hardware Hustle Build Book</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: an engineering dossier. Title block up top, a sticky sheet index, then sheets:
+   plan first (what to do next), design sheets (P&ID, wiring, logic), then bench tools. */
+:root {
+  --bg: #f2f4f5;
+  --panel: #ffffff;
+  --ink: #15212b;
+  --muted: #55646e;
+  --rule: #d3dbe0;
+  --accent: #0b6a8f;
+  --accent-soft: #e1eef4;
+  --ok: #2e7d4f;
+  --warn: #9a5c00;
+  --bad: #b3261e;
+  --pw: #8a4a12;
+  --sig: #6b7780;
+  --font-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --font-body: "Barlow", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --radius: 6px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1418; --panel: #151d23; --ink: #e2e9ee; --muted: #98a6b0; --rule: #27333c;
+    --accent: #52b2d8; --accent-soft: #15303c; --ok: #5cc08a; --warn: #e2a54b; --bad: #f06b62;
+    --pw: #e19a5c; --sig: #8995a0; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1418; --panel: #151d23; --ink: #e2e9ee; --muted: #98a6b0; --rule: #27333c;
+  --accent: #52b2d8; --accent-soft: #15303c; --ok: #5cc08a; --warn: #e2a54b; --bad: #f06b62;
+  --pw: #e19a5c; --sig: #8995a0; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-inline: 16px; padding-block: 0 64px; }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.1; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(34px, 6vw, 56px); font-weight: 700; letter-spacing: .2px; }
+h2 { font-size: clamp(26px, 4vw, 34px); font-weight: 600; }
+h3 { font-size: 20px; font-weight: 600; }
+p { margin: 0; }
+a { color: var(--accent); }
+code, .mono, kbd { font-family: var(--font-mono); font-size: .88em; }
+.eyebrow { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.lede { color: var(--muted); max-width: 68ch; font-size: 16px; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* title block */
+.titleblock { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 24px; align-items: end; padding-block: 36px 22px; border-bottom: 2px solid var(--ink); }
+.titleblock .name { display: grid; gap: 10px; min-width: 0; }
+.tb-grid { display: grid; grid-template-columns: repeat(2, minmax(120px, auto)); border: 1.5px solid var(--ink); margin: 0; font-size: 13px; }
+.tb-grid div { padding: 6px 10px; border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.tb-grid div:nth-child(2n) { border-right: 0; }
+.tb-grid dt { font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.tb-grid dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+.tb-grid .wide { grid-column: span 2; border-right: 0; }
+#countdown { color: var(--accent); }
+@media (max-width: 760px) { .titleblock { grid-template-columns: 1fr; } }
+
+/* sheet index */
+.index { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--rule); }
+.index ol { list-style: none; margin: 0 auto; max-width: 1120px; padding: 8px 16px; display: flex; gap: 4px 14px; overflow-x: auto; white-space: nowrap; scrollbar-width: thin; }
+.index a { font-family: var(--font-mono); font-size: 12px; text-decoration: none; color: var(--muted); padding: 4px 2px; }
+.index a:hover { color: var(--ink); }
+.index a span { color: var(--accent); margin-right: 4px; }
+
+section.sheet { padding-block: 44px 8px; border-bottom: 1px solid var(--rule); display: grid; gap: 18px; scroll-margin-top: 48px; }
+.sheet-head { display: grid; gap: 6px; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 860px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
+.panel { background: var(--panel); border: 1px solid var(--rule); border-radius: var(--radius); padding: 16px 18px; min-width: 0; }
+.panel h3 { margin-bottom: 8px; }
+.panel > * + * { margin-top: 8px; }
+
+/* contract */
+.contract { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; margin-top: 22px; align-items: start; }
+@media (max-width: 860px) { .contract { grid-template-columns: 1fr; } }
+.contract .obj { border-left: 4px solid var(--accent); }
+.contract .obj p + p { margin-top: 10px; }
+.tag { display: inline-block; font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+ul.tight { margin: 4px 0 0; padding-left: 18px; }
+ul.tight li + li { margin-top: 3px; }
+
+/* findings */
+.findings { display: grid; gap: 0; border-top: 1px solid var(--rule); }
+.finding { display: grid; grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr); gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--rule); align-items: start; }
+.finding .arrow { color: var(--accent); font-family: var(--font-mono); text-align: center; }
+.finding .dec { font-weight: 600; }
+.finding .src { display: block; margin-top: 4px; font-size: 12px; color: var(--muted); }
+@media (max-width: 720px) { .finding { grid-template-columns: 1fr; } .finding .arrow { text-align: left; } }
+
+/* milestones */
+.milestones { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 860px) { .milestones { grid-template-columns: 1fr; } }
+.ms { background: var(--panel); border: 1px solid var(--rule); border-radius: var(--radius); padding: 14px 16px 16px; display: grid; gap: 8px; min-width: 0; align-content: start; }
+.ms header { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; }
+.ms .id { font-family: var(--font-display); font-weight: 700; font-size: 26px; color: var(--accent); line-height: 1; }
+.ms h3 { font-size: 19px; flex: 1 1 240px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.chip { font-family: var(--font-mono); font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--rule); color: var(--muted); white-space: nowrap; }
+.chip.crit { border-color: var(--accent); color: var(--accent); }
+.ms dl { margin: 0; display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 6px 10px; font-size: 14px; }
+.ms dt { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding-top: 2px; }
+.ms dd { margin: 0; }
+@media (max-width: 520px) { .ms dl { grid-template-columns: 1fr; gap: 2px; } .ms dt { padding-top: 6px; } }
+
+/* tables */
+.tablewrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--panel); }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { text-align: left; vertical-align: top; padding: 7px 10px; border-bottom: 1px solid var(--rule); }
+th { font-family: var(--font-mono); font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); background: var(--bg); position: sticky; top: 0; }
+tbody tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+td code { white-space: nowrap; }
+
+/* run sheet */
+.runsheet { min-width: 980px; display: grid; grid-template-columns: 150px repeat(9, minmax(0, 1fr)); font-size: 12.5px; }
+.runsheet > div { padding: 7px 8px; border-bottom: 1px solid var(--rule); border-right: 1px solid var(--rule); min-width: 0; }
+.runsheet .hd { font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); background: var(--bg); text-transform: uppercase; letter-spacing: .05em; }
+.runsheet .lane { font-weight: 600; background: var(--bg); }
+.runsheet .m { display: inline-block; font-family: var(--font-mono); font-size: 10.5px; color: var(--accent); }
+.runsheet .all { grid-column: span 1; background: var(--accent-soft); }
+
+/* figures */
+figure { margin: 0; display: grid; gap: 8px; }
+.figscroll { overflow-x: auto; background: var(--panel); border: 1px solid var(--rule); border-radius: var(--radius); padding: 10px; }
+figcaption { font-size: 13.5px; color: var(--muted); max-width: 90ch; }
+svg.diagram { display: block; width: 100%; height: auto; min-width: 920px; color: var(--ink); }
+svg.diagram text { font-family: var(--font-mono); fill: var(--ink); }
+svg.diagram .t { font-size: 12px; }
+svg.diagram .ts { font-size: 10.5px; fill: var(--muted); }
+svg.diagram .tb { font-size: 12.5px; font-weight: 700; }
+svg.diagram .tbub { font-size: 9.5px; font-weight: 700; }
+svg.diagram .io { font-size: 10.5px; font-weight: 600; fill: var(--accent); }
+svg.diagram .ln { fill: none; stroke: var(--accent); stroke-width: 3; }
+svg.diagram .pw { fill: none; stroke: var(--pw); stroke-width: 2.6; }
+svg.diagram .wire { fill: none; stroke: var(--ink); stroke-width: 1.6; }
+svg.diagram .sig { fill: none; stroke: var(--sig); stroke-width: 1.3; stroke-dasharray: 5 4; }
+svg.diagram .tr { fill: none; stroke: var(--ink); stroke-width: 1.4; }
+svg.diagram .eq { fill: none; stroke: var(--ink); stroke-width: 2; }
+svg.diagram .eq.thin { stroke-width: 1.1; }
+svg.diagram .pumpfill { fill: var(--panel); }
+svg.diagram .vlv { fill: var(--panel); stroke: var(--ink); stroke-width: 1.6; }
+svg.diagram .box, svg.diagram .res, svg.diagram .bub { fill: var(--panel); stroke: var(--ink); stroke-width: 1.4; }
+svg.diagram .box.hot { stroke: var(--bad); }
+svg.diagram .liq { fill: var(--accent); fill-opacity: .13; }
+svg.diagram .dot { fill: var(--ink); }
+svg.diagram .fa { fill: var(--accent); }
+svg.diagram .pa { fill: var(--pw); }
+svg.diagram .ta { fill: var(--ink); }
+svg.diagram .elec { stroke: var(--warn); stroke-width: 6; }
+svg.diagram .probe { fill: var(--warn); }
+dl.q2 { margin: 0; display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 8px 12px; }
+dl.q2 dt { font-family: var(--font-mono); font-weight: 600; color: var(--accent); }
+dl.q2 dd { margin: 0; }
+svg.diagram .zone { fill: var(--accent); fill-opacity: .05; }
+svg.diagram .gnd { fill: none; stroke: var(--sig); stroke-width: 1.3; }
+svg.diagram .pwt { font-size: 10.5px; font-weight: 600; fill: var(--pw); }
+svg.diagram .st { fill: var(--panel); stroke: var(--ink); stroke-width: 1.5; }
+svg.diagram .st.done { stroke: var(--ok); stroke-width: 2.5; }
+svg.diagram .st.stop { stroke: var(--bad); }
+
+/* status pills */
+.pill { display: inline-block; font-family: var(--font-mono); font-size: 11px; padding: 1px 7px; border-radius: 4px; border: 1px solid currentColor; }
+.pill.ok { color: var(--ok); } .pill.warn { color: var(--warn); } .pill.bad { color: var(--bad); } .pill.info { color: var(--accent); }
+
+/* forms and tools */
+.tool { background: var(--panel); border: 1px solid var(--rule); border-radius: var(--radius); padding: 16px 18px; display: grid; gap: 12px; min-width: 0; align-content: start; }
+.tool > header { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; justify-content: space-between; }
+.fields { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: end; }
+.field { display: grid; gap: 3px; }
+.field label { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+input[type="number"], input[type="text"], select, textarea { font: inherit; font-size: 14px; color: var(--ink); background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; padding: 6px 8px; min-width: 0; }
+input[type="number"] { width: 108px; font-variant-numeric: tabular-nums; }
+input.narrow { width: 82px; }
+textarea { width: 100%; font-family: var(--font-mono); font-size: 12.5px; min-height: 64px; }
+button { font: inherit; font-size: 13.5px; font-weight: 600; color: var(--ink); background: var(--panel); border: 1px solid var(--ink); border-radius: 4px; padding: 6px 12px; cursor: pointer; }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--panel); }
+button.ghost { border-color: var(--rule); font-weight: 500; }
+button:disabled { opacity: .45; cursor: not-allowed; }
+.out { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.kv { border: 1px solid var(--rule); border-radius: 4px; padding: 8px 10px; background: var(--bg); min-width: 0; }
+.kv .k { font-family: var(--font-mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.kv .v { font-family: var(--font-mono); font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.kv .v small { font-size: 12px; color: var(--muted); font-weight: 400; }
+.cmd { display: flex; gap: 8px; align-items: stretch; flex-wrap: wrap; }
+.cmd pre { flex: 1 1 260px; margin: 0; background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; padding: 8px 10px; font-family: var(--font-mono); font-size: 12.5px; white-space: pre-wrap; overflow-x: auto; min-width: 0; }
+.note { font-size: 13px; color: var(--muted); }
+.banner { border: 1px dashed var(--warn); color: var(--warn); border-radius: 4px; padding: 6px 10px; font-size: 13px; }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { font-family: var(--font-mono); font-size: 11px; fill: var(--muted); }
+.chart .axis { stroke: var(--rule); stroke-width: 1; }
+.chart .grid { stroke: var(--rule); stroke-width: 1; stroke-dasharray: 2 3; }
+.chart .fit { stroke: var(--ink); stroke-width: 1.8; fill: none; }
+.chart .ds { stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 4 4; fill: none; }
+.chart .band { fill: var(--accent); fill-opacity: .12; stroke: none; }
+.chart .pt { fill: var(--accent); stroke: var(--panel); stroke-width: 1.5; }
+.chart .zero { stroke: var(--muted); stroke-width: 1; }
+.chart .okband { fill: var(--ok); fill-opacity: .08; }
+
+/* checklists */
+.checks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
+@media (max-width: 860px) { .checks { grid-template-columns: 1fr; } }
+.cgroup { background: var(--panel); border: 1px solid var(--rule); border-radius: var(--radius); padding: 12px 14px; min-width: 0; }
+.cgroup header { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; margin-bottom: 6px; }
+.cgroup h3 { font-size: 17px; }
+.bar { height: 4px; background: var(--rule); border-radius: 2px; overflow: hidden; margin-bottom: 8px; }
+.bar i { display: block; height: 100%; background: var(--ok); width: 0; transition: width .3s; }
+.citem { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 4px 8px; padding: 6px 0; border-top: 1px solid var(--rule); font-size: 14px; }
+.citem input { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--ok); }
+.citem .who { grid-column: 2; font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+.citem.done label { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--rule); }
+
+/* team */
+.team { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
+@media (max-width: 860px) { .team { grid-template-columns: 1fr; } }
+.role { background: var(--panel); border: 1px solid var(--rule); border-top: 4px solid var(--accent); border-radius: var(--radius); padding: 14px 16px; display: grid; gap: 8px; min-width: 0; align-content: start; }
+.role header { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; }
+.role .id { font-family: var(--font-display); font-weight: 700; font-size: 26px; color: var(--accent); line-height: 1; }
+.role h3 { font-size: 19px; flex: 1 1 180px; }
+.role input.rolename { width: 100%; max-width: 260px; }
+.role .fit { font-size: 14px; color: var(--muted); margin: 0; }
+.role h4 { font-family: var(--font-mono); font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 6px 0 0; }
+.role ul { margin: 0; padding-left: 18px; font-size: 14px; }
+.role p { margin: 0; font-size: 14px; }
+pre.msg { margin: 0; background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; padding: 10px 12px; font-family: var(--font-mono); font-size: 12.5px; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 440px; overflow-y: auto; }
+.bench input[type="text"] { width: 100%; min-width: 150px; }
+.bench .who { font-family: var(--font-mono); font-size: 11px; color: var(--muted); white-space: nowrap; }
+
+/* storyboard */
+.sb { counter-reset: shot; }
+.ladder { margin: 0; padding-left: 0; list-style: none; display: grid; gap: 8px; counter-reset: step; }
+.ladder li { counter-increment: step; display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 10px; align-items: start; }
+.ladder li::before { content: counter(step); font-family: var(--font-display); font-weight: 700; font-size: 20px; color: var(--accent); line-height: 1.2; }
+.floor { border-left: 4px solid var(--ok); }
+.kill { border-left: 4px solid var(--bad); }
+.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 8px 14px; border-radius: 4px; font-size: 13px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 20; }
+.toast.on { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<header class="wrap">
+  <div class="titleblock">
+    <div class="name">
+      <p class="eyebrow">LAM Research Challenge 3.0 · Stage 2 · Hardware Hustle</p>
+      <h1>Hardware Hustle Build Book</h1>
+      <p class="lede">The plan of record for the automated three-pump flow rig: what to build, in what order, how each step is proven, and the bench tools to prove it. Everything here is written for the team at the bench. New to the book? Find your role on <a href="#path">sheet 02</a>.</p>
+    </div>
+    <dl class="tb-grid">
+      <div><dt>Doc</dt><dd>HH-BB-01</dd></div>
+      <div><dt>Revision</dt><dd>{{REV}}</dd></div>
+      <div><dt>Issued</dt><dd>Fri 2 Oct 2026</dd></div>
+      <div><dt>Upload by</dt><dd>Sun 4 Oct · 18:00 IST</dd></div>
+      <div class="wide"><dt>Time to upload cutoff</dt><dd id="countdown">calculating</dd></div>
+    </dl>
+  </div>
+  <div class="contract">
+    <div class="panel obj">
+      <span class="tag">Objective</span>
+      <p>{{OBJECTIVE}}</p>
+      <span class="tag">Done when</span>
+      <p>{{DONE_WHEN}}</p>
+    </div>
+    <div class="panel">
+      <span class="tag">Not doing</span>
+      <ul class="tight">
+{{NOT_DOING}}
+      </ul>
+      <span class="tag">Constraints that bind</span>
+      <ul class="tight">
+{{CONSTRAINTS}}
+      </ul>
+    </div>
+  </div>
+</header>
+
+<nav class="index" aria-label="Sheets">
+  <ol>
+    <li><a href="#win"><span>00</span>Top 3</a></li>
+    <li><a href="#decisions"><span>01</span>Decisions</a></li>
+    <li><a href="#path"><span>02</span>Team &amp; path</a></li>
+    <li><a href="#hydraulics"><span>03</span>Hydraulics</a></li>
+    <li><a href="#electrical"><span>04</span>Electrical</a></li>
+    <li><a href="#control"><span>05</span>Control</a></li>
+    <li><a href="#calibration"><span>06</span>Bench log &amp; cal</a></li>
+    <li><a href="#answers"><span>07</span>Answers</a></li>
+    <li><a href="#checklists"><span>08</span>Checklists</a></li>
+    <li><a href="#video"><span>09</span>Video</a></li>
+    <li><a href="#risks"><span>10</span>Risks</a></li>
+    <li><a href="#downloads"><span>11</span>Downloads</a></li>
+  </ol>
+</nav>
+
+<main class="wrap">
+
+<section class="sheet" id="win">
+  <div class="sheet-head">
+    <p class="eyebrow">Sheet 00 · Strategy</p>
+    <h2>How we place top 3</h2>
+    <p class="lede">Hardware Hustle sends 25 of its 50 teams to the Grand Finale. Top 3 means doing everything the round asks, visibly, with nothing missing, and then showing judgement that other teams do not.</p>
+  </div>
+  <div class="panel obj">
+    <span class="tag">What this round rewards, in its own words</span>
+    <p>“Using the provided kit, teams must design, build, test, and validate a working physical system – no simulations, no shortcuts. Teams will acquire real data, characterise system performance, and validate results through calculations, plots, and rigorous engineering interpretation.”</p>
+    <p>Grand Finale judges evaluate “system architecture, component selection, control strategy, implementation, optimisation, troubleshooting, and overall engineering execution”. Lam describes the challenge as integrating “hardware, software, systems thinking, agility, and project management”.</p>
+    <p class="small muted">Sources: {{WIN_SOURCES}}</p>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Where we win points</th><th>What it means here</th><th>The evidence that shows it</th></tr></thead>
+      <tbody>
+{{WIN_PILLARS}}
+      </tbody>
+    </table>
+  </div>
+  <div class="grid2">
+    <div class="panel kill">
+      <h3>What loses points</h3>
+      <ul class="tight">
+{{WIN_LOSE}}
+      </ul>
+    </div>
+    <div class="panel">
+      <h3>The judges' vocabulary, used only where we show it</h3>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Term</th><th>Where it applies on our rig</th></tr></thead>
+          <tbody>
+{{WIN_VOCAB}}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="panel floor">
+    <h3>Grand Finale readiness (start Monday if we advance)</h3>
+    <p class="small muted">The finale is offline, on a kit at the venue, and judges troubleshooting live. Practise for that now.</p>
+    <ul class="tight">
+{{FINALE}}
+    </ul>
+  </div>
+</section>
+
+<section class="sheet" id="decisions">
+  <div class="sheet-head">
+    <p class="eyebrow">Sheet 01 · Ground truth</p>
+    <h2>What we found, and the decision each finding forces</h2>
+    <p class="lede">Each finding is checked against a primary source or the kit itself. If a finding turns out to be wrong at the bench, that is a replan trigger (sheet 10).</p>
+  </div>
+  <div class="findings">
+{{FINDINGS}}
+  </div>
+</section>
+
+<section class="sheet" id="path">
+  <div class="sheet-head">
+    <p class="eyebrow">Sheet 02 · Team and critical path</p>
+    <h2>Four roles, seven milestones, ordered by the risk each one retires</h2>
+    <p class="lede">Each person owns part of this book and starts with the first steps on their card. The critical path runs M1 → M2 → M3 → M4 → M5 → M7, about 2.5 days from Friday 08:00. M6 runs alongside and can slip without moving the upload.</p>
+  </div>
+  <p class="banner">{{TEAM_NOTE}}</p>
+  <div class="team" id="team">
+{{TEAM}}
+  </div>
+  <div class="panel">
+    <h3>Message to the organisers (IV, first thing Friday)</h3>
+    <p class="small muted">Fill in the team ID, team name and sender, then send it on the organisers' channel. Answers that differ from the assumptions are a replan trigger (sheet 10).</p>
+    <pre class="msg" id="org-msg">{{ORG_MSG}}</pre>
+    <div class="fields"><button class="ghost" type="button" data-copy-from="#org-msg">Copy message</button></div>
+  </div>
+  <div class="panel">
+    <h3>Follow-up to the organisers (IV, Friday, after reading the portal)</h3>
+    <p class="small muted">The portal's form differs from the paper on video length and format. Send this on the same channel; the answers can move the plan (sheet 10).</p>
+    <pre class="msg" id="org-msg2">{{ORG_MSG2}}</pre>
+    <div class="fields"><button class="ghost" type="button" data-copy-from="#org-msg2">Copy message</button></div>
+  </div>
+  <div class="panel">
+    <h3>Buy today</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Item</th><th>Qty</th><th>Why</th><th>Where</th></tr></thead>
+        <tbody>
+{{PARTS}}
+        </tbody>
+      </table>
+    </div>
+    <p class="note">{{PARTS_NOTE}}</p>
+  </div>
+  <h3>Milestones</h3>
+  <div class="milestones">
+{{MILESTONES}}
+  </div>
+  <h3>Run sheet</h3>
+  <div class="tablewrap">
+    <div class="runsheet" role="table" aria-label="Run sheet by lane and time block">
+{{RUNSHEET}}
+    </div>
+  </div>
+  <div class="panel">
+    <h3>Checkpoints (IV calls each one)</h3>
+    <ul class="tight">
+{{CHECKPOINTS}}
+    </ul>
+    <p class="note">One rig and one scale: rig time is booked in the run sheet, and scale work (P-01 test, float trip volume, calibration) is batched.</p>
+  </div>
+</section>
+
+<section class="sheet" id="hydraulics">
+  <div class="sheet-head">
+    <p class="eyebrow">Sheet 03 · Hydraulic design</p>
+    <h2>P&amp;ID, line list and liquid inventory</h2>
+    <p class="lede">Every tank connection enters from the top through a dip tube, so nothing can drain through a failed fitting. FT-01 sits after the throttle valve and before the free discharge into TK-01: it never sees the pump's dead-head pressure.</p>
+  </div>
+  <figure>
+    <div class="figscroll">{{PID}}</div>
+    <figcaption>Figure 1. P&amp;ID (ISA-5.1-2024 symbols, simplified). Process lines are drawn in the accent colour with flow arrows, electrical signals dashed. The blue labels give the ESP32 GPIO that reads or drives each device. Tags match the physical labels on the rig.</figcaption>
+  </figure>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Line</th><th>Route</th><th>Tube</th><th>In line</th><th>Build note</th></tr></thead>
+      <tbody>
+{{LINELIST}}
+      </tbody>
+    </table>
+  </div>
+  <div class="grid2">
+    <div class="panel">
+      <h3>Layout and elevations</h3>
+      <ul class="tight">
+        <li>TK-01 and TK-03 sit about 0.3 m above the pump inlets on stools or boxes, which gives flooded suction for P-01 and P-03. TK-02 and the pumps sit on the bench.</li>
+        <li>Put the pumps and the PCB in a plastic tray as a drip tray, with the PCB on a raised board. Run the mains cord and SMPS at the far, dry end.</li>
+        <li>Mount FT-01 horizontally at the lowest point of L-202, arrow along the flow. Give it ≥ 5 cm of straight tube before and ≥ 2.5 cm after. The return then rises to TK-01, so the meter stays full.</li>
+        <li>Aim the P-01 discharge at the TK-02 wall opposite LS-01, so the float does not chatter on waves.</li>
+        <li>Clip each dip tube to the tank rim and weight its end (a nut on a zip tie). P-02's tube ends 1 cm above the floor; P-03's tube ends on the floor, cut at 45°.</li>
+        <li>Fix the BV-02 protractor dial (0–90°, marked 25/50/70/75/100%) under the handle before the valve tests.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3>Joints that do not leak</h3>
+      <ul class="tight">
+        <li>Cut tube square with a sharp blade. Push it in fully to the internal stop, then pull to confirm it is locked.</li>
+        <li>PTFE tape goes only on male threads: 3 wraps, clockwise viewed from the thread end, starting one thread back. Never on push-fits.</li>
+        <li>Pump barbs take a short 10 × 8 blue stub with two zip ties as a clamp, then a 10→8 reducer.</li>
+        <li>Leak test: 10 min at 3 L/min, then 2 min with BV-02 at 25%. Wrap each joint in dry tissue; any wet spot fails it.</li>
+      </ul>
+    </div>
+  </div>
+  <h3>Fitting map against the exact kit counts</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Joint</th><th>Parts</th><th>Qty</th><th>Note</th></tr></thead>
+      <tbody>
+{{FITTINGS}}
+      </tbody>
+    </table>
+  </div>
+  <div class="panel">
+    <h3>First water, in this order</h3>
+    <ol class="tight">
+{{FIRSTWATER}}
+    </ol>
+  </div>
+  <div class="tool" id="inventory">
+    <header><h3>Inventory planner</h3><span class="note">How much water goes where, so nothing overflows and no dip tube sucks air.</span></header>
+    <div class="fields">
+      <div class="field"><label for="inv-tk1">TK-01 start (L)</label><input type="number" id="inv-tk1" step="0.1" value="3.4"></div>
+      <div class="field"><label for="inv-s0">Sump start (L)</label><input type="number" id="inv-s0" step="0.1" value="2.1"></div>
+      <div class="field"><label for="inv-trip">Sump at LS-01 trip (L)</label><input type="number" id="inv-trip" step="0.1" value="2.5"></div>
+      <div class="field"><label for="inv-pour">External pour (L)</label><input type="number" id="inv-pour" step="0.1" value="0.8"></div>
+      <div class="field"><label for="inv-flush">Flush tank (L)</label><input type="number" id="inv-flush" step="0.1" value="4.2"></div>
+      <div class="field"><label for="inv-lines">Lines hold (L)</label><input type="number" id="inv-lines" step="0.05" value="0.25"></div>
+      <div class="field"><label for="inv-min">TK-01 minimum (L)</label><input type="number" id="inv-min" step="0.1" value="1.5"></div>
+      <div class="field"><label for="inv-brim">TK-01 brim (L)</label><input type="number" id="inv-brim" step="0.1" value="10.5"></div>
+      <div class="field"><label for="inv-q1">P-01 flow at d1 (L/min)</label><input type="number" id="inv-q1" step="0.1" value="3.3"></div>
+      <div class="field"><label for="inv-q2">Loop flow, FT-01 (L/min)</label><input type="number" id="inv-q2" step="0.1" value="3.0"></div>
+      <div class="field"><label for="inv-tp">Pour at, Case 1 + (s)</label><input type="number" id="inv-tp" step="5" value="60"></div>
+      <div class="field"><label for="inv-tc1">Case 1 length tc1 (s)</label><input type="number" id="inv-tc1" step="10" value="180"></div>
+      <div class="field"><label for="inv-smin">Sump minimum (L)</label><input type="number" id="inv-smin" step="0.1" value="0.5"></div>
+    </div>
+    <div class="out" id="inv-out"></div>
+    <p class="note">Measure the trip volume once: fill TK-02 on the scale until LS-01 changes state (1 kg = 1 L). Enter P-01's measured flow at d1 from the duty finder. If P-01 out-pumps the loop, the level climbs to the float before the pour unless the sump starts low enough; the planner gives that start. If P-01 is short of the loop flow, the sump drains through Case 1: FT-01 can still hold 3.0 L/min for tc1 if the pour comes early enough to trip LS-01 and the sump stays above its minimum to the end. Raise the pour volume, pour earlier or shorten tc1 until every card is green. Sump minimum is the level where P-02's dip tube starts to draw air; check it once by eye.</p>
+  </div>
+</section>
+
+<section class="sheet" id="electrical">
+  <div class="sheet-head">
+    <p class="eyebrow">Sheet 04 · Electrical design</p>
+    <h2>Wiring, power path, I/O list and the add-on board</h2>
+    <p class="lede">The PCB stays as supplied. Three unrouted ESP32 socket pins carry pump current, one carries the LSL-03 probe, and IBT-2 logic moves to 3.3 V. All of it is soldered on the underside of the socket or on a perfboard.</p>
+  </div>
+  <figure>
+    <div class="figscroll">{{WIRING}}</div>
+    <figcaption>Drawing E-01. Firmware connection diagram. Read each band left to right: the ESP32 pin the firmware uses (<code>src/main.cpp</code>), the PCB connector pin or add-on-board pad it goes through, the interface module, and the device on the rig. Arrows point the way the signal travels. Pin numbers are the U7 socket pins from the PCB schematic. If the continuity check shows SW and FSW swapped, swap BUTTON and FLOAT in the firmware's pin list.</figcaption>
+  </figure>
+  <h3>Short forms on the drawing</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Short form</th><th>Full form</th><th>On this rig</th></tr></thead>
+      <tbody>
+{{GLOSSARY}}
+      </tbody>
+    </table>
+  </div>
+  <figure>
+    <div class="figscroll">{{POWER}}</div>
+    <figcaption>Figure 2. Power distribution. Mains reaches only the SMPS. All 12 V loads go through fuse F3. Check the fuse value before power-up: Case 2 runs three pumps (≈ 11 A) through it.</figcaption>
+  </figure>
+  <figure>
+    <div class="figscroll">{{COND}}</div>
+    <figcaption>Figure 3. Signal conditioning on the add-on board. Measure the IS-to-GND resistance on each IBT-2 first. If it is not 10 kΩ per pin, choose the added resistor so the total is about 2 kΩ. Scope the FT-01 output before picking R1 and R2.</figcaption>
+  </figure>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>ESP32 pin</th><th>PCB net · connector</th><th>Device</th><th>Type</th><th>Note</th></tr></thead>
+      <tbody>
+{{IOLIST}}
+      </tbody>
+    </table>
+  </div>
+  <div class="grid2">
+    <div class="panel">
+      <h3>Harness, in build order</h3>
+      <ol class="tight">
+        <li>Continuity map before power: each ESP32 socket pin to its connector pin. Confirm whether SW and FSW are G34 and G35 or swapped.</li>
+        <li>Driver harness from U2/U3/U4 to the IBT-2s: GND, L_EN, R_EN, LPWM, RPWM. Leave U-header pin 1 (5 V) unconnected and feed IBT-2 VCC from 3V3.</li>
+        <li>On each IBT-2, tie R_IS to L_IS and add 3.3 kΩ to GND. Run a twisted pair (IS plus GND) to the add-on board.</li>
+        <li>Solder G36, G39, G15, G4 and G5 to the underside of the socket pins (socket pins 3, 4, 23, 26, 29). Mark them with sleeves.</li>
+        <li>Put a flyback diode (1N4007 or 1N5819) across the SOV coil: band to +12 V.</li>
+        <li>On the add-on board, clamp each IS pin (G15, G36, G39) to 3V3 with a BAT85 or BAT43, band to 3V3. A driver fault turns IS into a 4–7 mA source that would otherwise drive the pin towards 12 V.</li>
+        <li>Mount LS-01 so that contact OPEN = level HIGH. A broken wire then also reads high and stops P-01.</li>
+        <li>Make the LSL-03 probe from two bare tinned wires 5 mm apart, one to G4 and one to GND. Tape them along the TK-03 dip tube so 5 mm of bare wire ends 2–3 mm above the inlet. Twist the lead and keep it away from the motor wires.</li>
+      </ol>
+    </div>
+    <div class="panel">
+      <h3>Electrical safety, non-negotiable</h3>
+      <ul class="tight">
+        <li>Bond the SMPS PE terminal and close its terminal cover. Have a qualified person check the mains side, as the kit sheet requires.</li>
+        <li>Power-off checklist (sheet 08) before every first power-up. Check polarity at the PCB input with the DMM.</li>
+        <li>Keep pump wiring (16/18 AWG) apart from signal wiring. Twist the FT-01 lead and route it away from the motor leads.</li>
+        <li>Never hot-plug the motor leads. Never run a pump against a closed valve; I-1 to I-4 back this up in firmware.</li>
+        <li>Power-up order: 12 V on, ESP32 boots with every driver input LOW, then USB console. The firmware drives all driver pins LOW in its first statement.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="sheet" id="control">
+  <div class="sheet-head">
+    <p class="eyebrow">Sheet 05 · Control design</p>
+    <h2>Sequence, interlocks and fault diagnosis</h2>
+    <p class="lede">The firmware is laid out like a PLC scan: read inputs, run the sequence, apply interlocks, write outputs, every 10 ms. Telemetry goes out at 10 Hz over USB. It compiles with zero warnings on Arduino-ESP32 core 2.0.17 and 3.1.3.</p>
+  </div>
+  <figure>
+    <div class="figscroll">{{STATES}}</div>
+    <figcaption>Figure 4. Sequence state machine. One switch press runs the whole job; the only manual action is opening BV-01 while the LED blinks fast.</figcaption>
+  </figure>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Interlock</th><th>Trips when</th><th>Action</th><th>Why</th></tr></thead>
+      <tbody>
+{{INTERLOCKS}}
+      </tbody>
+    </table>
+  </div>
+  <div class="panel">
+    <h3>Firmware test bench (not evidence)</h3>
+    <p class="small muted">The simulator compiles <code>main.cpp</code> unchanged against mock ESP32 functions and a tank, pump and valve model, then plays the single take and four failure cases (<code>test/sim_rig.cpp</code> in the kit). It exists to catch logic bugs before bench time. The round says “no simulations”, so none of its output goes into the video or the paper. Re-run it after any firmware change.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Scenario</th><th>What happened</th><th>Result</th></tr></thead>
+        <tbody>
+{{SIMRESULTS}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <h3>Fault signatures (answers Q3.2, runs live in firmware)</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Diagnosis</th><th>P-02 cmd</th><th>FT-01 pulses</th><th>IT-02 current vs baseline</th><th>Physical cause</th><th>Firmware reaction</th></tr></thead>
+      <tbody>
+{{FDI}}
+      </tbody>
+    </table>
+  </div>
+  <div class="tool" id="diagnoser">
+    <header><h3>Diagnoser</h3><span class="note">The firmware's rules, for working through a symptom at the bench.</span></header>
+    <div class="fields">
+      <div class="field"><label for="dg-pump">Pump command</label><select id="dg-pump"><option value="on">ON</option><option value="off">OFF</option></select></div>
+      <div class="field"><label for="dg-pulse">FT-01 pulses</label><select id="dg-pulse"><option value="normal">normal</option><option value="reduced">reduced</option><option value="zero" selected>zero</option><option value="intermittent">intermittent</option></select></div>
+      <div class="field"><label for="dg-cur">Pump current</label><select id="dg-cur"><option value="unknown" selected>not measured</option><option value="normal">normal</option><option value="high">high or cycling on/off</option><option value="low">low</option><option value="zero">about zero</option><option value="fluct">fluctuating</option></select></div>
+    </div>
+    <div id="dg-out" class="panel" style="background:var(--bg)"></div>
+  </div>
+  <div class="grid2">
+    <div class="panel">
+      <h3>Console commands</h3>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Command</th><th>Does</th></tr></thead>
+          <tbody>
+{{COMMANDS}}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Parameters to set at the bench</h3>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Key</th><th class="num">Default</th><th>Set from</th></tr></thead>
+          <tbody>
+{{PARAMS}}
+          </tbody>
+        </table>
+      </div>
+      <p class="note">Change with <code>SET key value</code>, keep with <code>SAVE</code>. <code>GET</code> lists them all.</p>
+    </div>
+  </div>
+</section>
+
+<section class="sheet" id="calibration">
+  <div class="sheet-head">
+    <p class="eyebrow">Sheet 06 · Bench log, calibration and characterisation</p>
+    <h2>Record what the hardware says, then weigh it</h2>
+    <p class="lede">First log what the hardware actually does: those readings set the firmware parameters and close the open questions. Then calibrate FT-01 by weighing, because the scale is the primary standard.</p>
+  </div>
+  <div class="tool bench" id="bench">
+    <header><h3>Bench log</h3><span class="note" id="bench-mode">Saved in this browser until shared storage connects.</span></header>
+    <p class="small muted">Type each reading as soon as it is measured; it saves when you leave the box. These readings set the firmware parameters and decide every open question on sheet 10, so write the number with its unit, plus any surprise.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Measurement</th><th>How</th><th>When · who</th><th>Value</th><th>Entered</th></tr></thead>
+        <tbody>
+{{BENCH}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <p class="lede">Calibration is ISO 4185 static weighing. The ESP32 starts and stops P-02 itself and counts every pulse until the rotor stops, so f = N/t and Q = V/t share one exact window. Those are the paper's own formulas, without stopwatch error. Calibrate in place, through the final FT-01 spool, with the pump's real pulsation.</p>
+  <div class="grid2">
+    <div class="panel">
+      <h3>Procedure (about 75 min for 15 runs)</h3>
+      <ol class="tight">
+        <li>Freeze the FT-01 spool: no tube moves near the meter from now on.</li>
+        <li>Lay the L-202 end into a bucket on the scale, falling continuously so it drains the same way every time. Tare.</li>
+        <li>Pick five duties from the duty map to give about 1, 2, 3, 4 L/min and the maximum. Do 3 runs each. Nothing below 1 L/min: the rotor slips there, and a point at 0.5 L/min alone adds about 5% error to the fit.</li>
+        <li>Console: <code>CAL 60 35</code> (seconds, duty %). Size runs by mass, at least 1.5 kg: 120 s below 1.5 L/min, 40 s above 4 L/min, and each run under 4.5 kg. Log the water temperature.</li>
+        <li>Wait for the <code>CAL_DONE</code> event, which comes once the rotor has stopped. Weigh, enter the net grams below, and pour the water back into TK-02. Shake the bucket to the same wetness each time and re-tare.</li>
+        <li>Start-stop check, once at 3 L/min: one 180 s run against three 60 s runs. If they differ by more than 0.5%, the per-run start and stop error is too big: lengthen every run.</li>
+        <li>Paste the SET lines into the console, then <code>SAVE</code>. Verify at the exact Case 1 setting (P-02's d2 and BV-02 on its trim mark); it must agree with the scale within ±2%. If it misses, add three runs at that setting to the fit and report the difference: it is the pulsation effect.</li>
+      </ol>
+    </div>
+    <div class="panel">
+      <h3>What good looks like</h3>
+      <ul class="tight">
+        <li>Maximum error ≤ 3% of reading and repeats within ±1% of each other: that is the gate. Report R² as well, but do not accept on it; 2–3% scatter still gives R² ≥ 0.995.</li>
+        <li>On the certificate: a and b with their standard errors, the residual of every run in % of reading, maximum and mean absolute error, repeatability at each flow, and the expanded uncertainty (k = 2) at 3 L/min.</li>
+        <li>K within ±10% of the datasheet's 5,880 pulses/L. A larger miss means air in the meter or a cracked rotor seat.</li>
+        <li>A positive offset b is physical: the rotor needs a minimum flow to turn. The firmware zeroes Q below fcut, so b never adds to the totaliser at rest.</li>
+        <li>Pulse duty on the console ≈ 50 ± 10%. Any other value means a magnet or wiring fault.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="tool" id="cal">
+    <header>
+      <h3>Calibration workbench</h3>
+      <span class="note" id="cal-sync">Shared with the team once this page connects.</span>
+    </header>
+    <div class="fields">
+      <div class="field"><label for="cal-pulses">Pulses N</label><input type="number" id="cal-pulses" step="1" min="0"></div>
+      <div class="field"><label for="cal-time">Time t (s)</label><input type="number" id="cal-time" step="0.001" min="0"></div>
+      <div class="field"><label for="cal-mass">Net mass (g)</label><input type="number" id="cal-mass" step="1" min="0"></div>
+      <div class="field"><label for="cal-duty">Duty %</label><input type="number" id="cal-duty" class="narrow" step="1" min="0" max="100"></div>
+      <div class="field"><label for="cal-note">Note</label><input type="text" id="cal-note" placeholder="e.g. repeat 2"></div>
+      <button class="primary" id="cal-add" type="button">Add run</button>
+      <div class="field"><label for="cal-rho">Density (g/L)</label><input type="number" id="cal-rho" step="0.1" value="1000" class="narrow"></div>
+    </div>
+    <details>
+      <summary class="small">Paste <code>C,…</code> lines from the console instead</summary>
+      <textarea id="cal-paste" placeholder="C,812345,1,17643,60.004,294.04,0.62"></textarea>
+      <button class="ghost" id="cal-paste-go" type="button">Add pasted runs (mass to fill in)</button>
+    </details>
+    <div id="cal-example" class="banner" hidden>Example runs are shown so you can see the outputs. They are not your data and will disappear when your first run is added.</div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>#</th><th class="num">Pulses</th><th class="num">t (s)</th><th class="num">f (Hz)</th><th class="num">Mass (g)</th><th class="num">V (L)</th><th class="num">Q actual (L/min)</th><th class="num">Q fit</th><th class="num">Error %</th><th class="num">K (p/L)</th><th></th></tr></thead>
+        <tbody id="cal-rows"></tbody>
+      </table>
+    </div>
+    <div class="out" id="cal-out"></div>
+    <div class="grid2">
+      <figure><svg class="chart" id="cal-chart" viewBox="0 0 560 330" role="img" aria-label="Actual flow against pulse frequency with the fitted line"></svg><figcaption class="small">Q against f: fit, 95% prediction band, datasheet line Q = f/98.</figcaption></figure>
+      <figure><svg class="chart" id="cal-resid" viewBox="0 0 560 330" role="img" aria-label="Fit error in percent against actual flow"></svg><figcaption class="small">Fit error per run; shaded band ±2%.</figcaption></figure>
+    </div>
+    <div class="cmd"><pre id="cal-cmds">Add three or more weighed runs to get the SET commands.</pre><button class="ghost" data-copy-from="#cal-cmds" type="button">Copy</button></div>
+    <div class="fields"><button class="ghost" id="cal-csv" type="button">Export runs as CSV</button><span class="note" id="cal-csv-note"></span></div>
+  </div>
+  <div class="tool" id="p1duty">
+    <header><h3>P-01 duty finder (milestone M1)</h3><span class="note">Pump TK-01 → SOV-01 → P-01 → bucket on the scale for 30 s at each duty.</span></header>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Duty %</th><th>Net mass (g)</th><th>Time (s)</th><th class="num">Q (L/min)</th></tr></thead>
+        <tbody id="p1-rows"></tbody>
+      </table>
+    </div>
+    <div class="fields">
+      <div class="field"><label for="p1-target">Loop target (L/min)</label><input type="number" id="p1-target" step="0.1" value="3.0" class="narrow"></div>
+      <div class="field"><label for="p1-margin">Surplus %</label><input type="number" id="p1-margin" step="1" value="10" class="narrow"></div>
+    </div>
+    <div class="out" id="p1-out"></div>
+    <div class="cmd"><pre id="p1-cmd">Enter at least two duties.</pre><button class="ghost" data-copy-from="#p1-cmd" type="button">Copy</button></div>
+    <p class="note">Values stay in this browser only. A 10% surplus lets LS-01 cycle P-01 gently while P-02 holds 3.0 L/min steady.</p>
+  </div>
+  <div class="grid2">
+    <div class="panel">
+      <h3>Task 2 valve test</h3>
+      <ol class="tight">
+        <li>P-02 at 100% (spec). % open is the handle angle on the dial (90° = 100%). Start from BV-02 at 100%, then go 75 → 70 → 50 → 40 → 30 → 25 → 50 → 75 → 100%. The way back up checks hysteresis. Spend no more than 60 s at 25%: the line before BV-02 is near the switch pressure there.</li>
+        <li>After each move, type <code>MARK V50</code> (and so on), hold 60 s, then <code>MARK END</code> at the finish.</li>
+        <li><code>python analyze_run.py valve TELEMETRY EVENTS</code> gives the table, the steady values, the time constant and the plot.</li>
+        <li>Expect the flow to fall a little from 100% to about 50%, because the pump's curve droops as its discharge pressure rises, then steeply below about 45%, and the pressure switch to cycle near 25% (bursts on the flow trend, IT-02 dropping out). 70% and 75% will read almost the same. IT-02 rises as the discharge pressure rises.</li>
+      </ol>
+    </div>
+    <div class="panel">
+      <h3>Flow control (optional, M6)</h3>
+      <ol class="tight">
+        <li>Duty map: hold P-02 at 30, 50, 70 and 90% for 10 s each in MANUAL. <code>analyze_run.py dutymap</code> prints <code>SET ffq0/ffq1</code>.</li>
+        <li>Step test: 50% → 70%. <code>analyze_run.py step</code> fits K, θ, τ and gives lambda-tuned <code>kc</code> and <code>ti</code>.</li>
+        <li><code>FIC</code> and <code>SET sp 3.0</code>, then close BV-02 to 50%. The loop should restore 3.0 L/min within about 3 s, and FDI should report RESTRICTION from the extra duty.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<section class="sheet" id="answers">
+  <div class="sheet-head">
+    <p class="eyebrow">Sheet 07 · Answer support</p>
+    <h2>Worked answers, ready for measured numbers</h2>
+    <p class="lede">The theory is done here so bench time goes to measurement. Copy the numbers from the calculators into the paper, and attach the plots from the tools.</p>
+  </div>
+  <div class="tool" id="velocity">
+    <header><h3>Q1.2 velocity, theory against the real bore</h3><span class="note">v = Q/A, Re = ρvD/μ, Blasius f = 0.316 Re<sup>−0.25</sup></span></header>
+    <div class="fields">
+      <div class="field"><label for="v-nom">Paper diameter (mm)</label><input type="number" id="v-nom" step="0.1" value="8.0" class="narrow"></div>
+      <div class="field"><label for="v-id">Measured bore (mm)</label><input type="number" id="v-id" step="0.05" value="5.0" class="narrow"></div>
+      <div class="field"><label for="v-q1">Achieved at ~1 (L/min)</label><input type="number" id="v-q1" step="0.01" placeholder="measured"></div>
+      <div class="field"><label for="v-q3">Achieved at ~3</label><input type="number" id="v-q3" step="0.01" placeholder="measured"></div>
+      <div class="field"><label for="v-q6">Achieved at max</label><input type="number" id="v-q6" step="0.01" placeholder="measured"></div>
+    </div>
+    <div class="tablewrap"><table><thead><tr><th>Flow</th><th class="num">v @ paper D (m/s)</th><th class="num">Re</th><th class="num">v @ bore (m/s)</th><th class="num">Re</th><th>Regime</th><th class="num">Δp (kPa/m)</th><th class="num">1 m transit (s)</th></tr></thead><tbody id="v-rows"></tbody></table></div>
+    <p class="note">Write-up: the paper's 8 mm is the tube's outside diameter. The bore is 5 mm, so the real velocity is (8/5)² = 2.56 times the "theoretical" one, and every operating point is turbulent. The flow is also not steady: <code>BURST</code> + <code>analyze_run.py burst</code> shows the diaphragm strokes as ripple on the pulse-by-pulse flow. A food-dye front over a marked length of clear tube travels at about 1.2–1.3 × v<sub>mean</sub>, as a turbulent profile predicts; at 3 L/min 1 m takes only 0.39 s, so film it in 240 fps slow motion against a ruler over at least 2 m, and time the middle of the dye cloud, not its tip, for the mean velocity. The friction (≈ 19 kPa/m at 3 L/min) is why 6 L/min is out of reach through this loop; report the measured maximum and explain it with the pump and system curves.</p>
+  </div>
+  <div class="grid2">
+    <div class="tool" id="residence">
+      <header><h3>Q3.1 residence time</h3></header>
+      <div class="fields">
+        <div class="field"><label for="r-v">Volume V (L)</label><input type="number" id="r-v" step="0.1" value="0.5" class="narrow"></div>
+        <div class="field"><label for="r-q">Flow Q (L/min)</label><input type="number" id="r-q" step="0.1" value="2.5" class="narrow"></div>
+      </div>
+      <div class="out" id="r-out"></div>
+      <div class="fields">
+        <div class="field"><label for="r-sump">Sump held (L)</label><input type="number" id="r-sump" step="0.1" value="2.5" class="narrow"></div>
+        <div class="field"><label for="r-flush">Flush volume (L)</label><input type="number" id="r-flush" step="0.1" value="4.2" class="narrow"></div>
+      </div>
+      <div class="out" id="r-wash"></div>
+    </div>
+    <div class="panel">
+      <h3>Q3.1 written answer</h3>
+      <p><strong>τ = V/Q = 0.5 L ÷ 2.5 L/min = 0.2 min = 12 s.</strong> The sheet prints T<sub>r</sub> = Q/V; that ratio, 5 min<sup>−1</sup>, is the turnover rate, and residence time is its inverse.</p>
+      <ol class="tight">
+        <li><strong>Meaning:</strong> the average time a fluid parcel spends in that section. It is also the time to displace the section once, and the transport delay between something entering and it reaching the meter. Turbulent flow behaves close to plug flow.</li>
+        <li><strong>V doubled:</strong> τ doubles, to 24 s.</li>
+        <li><strong>Q doubled:</strong> τ halves, to 6 s.</li>
+        <li><strong>Why it matters:</strong> in a full, incompressible line, a change in pump or valve shows up at FT-01 almost at once, because pressure waves travel at hundreds of m/s. Anything carried by the fluid (an air slug, the flush front, a contaminant) arrives τ later. A tank with a free surface breaks the chain: on our rig the flush tank running dry is invisible at FT-01 until the sump drains. So we detect it at the source (LSL-03, IT-03). Residence time also sets alarm delays and the dead time a controller must tolerate.</li>
+      </ol>
+      <p class="note">Bonus insight: the sump is a mixed tank. Pushing 4.2 L through about 2.5 L of mixed liquid leaves e<sup>−4.2/2.5</sup> ≈ 19% of the original fluid behind. Lower the sump first, or flush longer.</p>
+    </div>
+  </div>
+  <h3>Decision log: each choice and the data behind it</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Decision</th><th>Data that forced it (fill in the blanks at the bench)</th><th>Where it shows</th></tr></thead>
+      <tbody>
+{{DECISIONS}}
+      </tbody>
+    </table>
+  </div>
+  <div class="panel">
+    <h3>Q2 interpretation, ready for the measured numbers</h3>
+    <dl class="q2">
+{{Q2TEXT}}
+    </dl>
+  </div>
+  <div class="panel">
+    <h3>Q3.2 written answer</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Cond.</th><th>Most likely</th><th>Could also be</th><th>What separates them</th></tr></thead>
+        <tbody>
+{{Q32}}
+        </tbody>
+      </table>
+    </div>
+    <p><strong>Hardest with FT-01 alone: C</strong> (pump on, valve open, no pulses), then E. FT-01 reports only "rotor turning". No flow and no signal look the same, and a blocked line, a dry or air-locked pump, a failed motor and a dead sensor all give zero. Telling them apart needs pump current or power, discharge pressure, tank level, valve position feedback, an independent volume check, and sensor health (supply voltage, a pulse duty of about 50%). The rig measures pump current and the sump and flush-tank levels (and valve position if ZSO-01 is fitted), and the firmware names the cause live (sheet 05).</p>
+  </div>
+</section>
+
+<section class="sheet" id="checklists">
+  <div class="sheet-head">
+    <p class="eyebrow">Sheet 08 · Checklists</p>
+    <h2>Tick as you go; the whole team sees it</h2>
+    <p class="lede" id="chk-mode">Ticks are shared once this page connects. Each tick records who made it and when.</p>
+  </div>
+  <div class="checks" id="checks"></div>
+</section>
+
+<section class="sheet" id="video">
+  <div class="sheet-head">
+    <p class="eyebrow">Sheet 09 · Video</p>
+    <h2>Challenge Video: 11½ minutes, with one unbroken take for Cases 1 and 2</h2>
+    <p class="lede">The portal takes a 10–12 minute Challenge Video and a 3–4 minute Journey Video, both MP4. The single take proves "no manual intervention except BV-01", so it runs uncut at real speed. Everything else is edited around it. Record the console screen with OBS, and sync it with one clap while the LED flashes.</p>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Time</th><th>Shot</th><th>On screen</th><th>Say (the judges are listening for)</th></tr></thead>
+      <tbody>
+{{STORY}}
+      </tbody>
+    </table>
+  </div>
+  <h3>Single-take run script</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Role</th><th>Does</th><th>Never</th></tr></thead>
+      <tbody>
+{{RUNSCRIPT}}
+      </tbody>
+    </table>
+  </div>
+  <div class="grid2">
+    <div class="panel">
+      <h3>Reset between rehearsals (about 6 min)</h3>
+      <ol class="tight">
+{{RESET}}
+      </ol>
+    </div>
+    <div class="panel kill">
+      <h3>Abort rule</h3>
+      <p>{{ABORT}}</p>
+      <p class="note">The console title shows “Case 1 +…” for the pour cue (+60 s, or the planner's time) and “Case 2 +…” after the switch-over.</p>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="panel">
+      <h3>Recording setup</h3>
+      <ul class="tight">
+        <li>Phone A on a tripod, wide shot, 1080p60, locked exposure. Phone B handheld for close-ups of tags, the LED, the float and the BV-01 hand.</li>
+        <li>OBS records the laptop: console plots plus the event log. Picture-in-picture goes in the edit.</li>
+        <li>Clip-on mic or a phone voice memo near the speaker. No fans or pumps between the mic and the mouth.</li>
+        <li>Every component carries its P&amp;ID tag on white tape, plus arrows on the tubes. These double as the labelled photos.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3>Photos (printed on the PDF's appendix pages)</h3>
+      <ul class="tight">
+        <li>Whole rig, front, with every tag readable. Annotate it with the same tags as the P&amp;ID.</li>
+        <li>Electronics close-up: PCB, IBT-2s, add-on board, and the labelled harness.</li>
+        <li>Calibration setup: bucket on the scale, with the return line in it.</li>
+        <li>FT-01 spool with its straight runs; BV-02 with its dial.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="panel">
+      <h3>Journey Video (3–4 min, IV)</h3>
+      <ul class="tight">
+{{JOURNEY}}
+      </ul>
+    </div>
+    <div class="panel kill">
+      <h3>Submission package: three files, no second chance</h3>
+      <ul class="tight">
+{{SUBMIT}}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="sheet" id="risks">
+  <div class="sheet-head">
+    <p class="eyebrow">Sheet 10 · Risk register</p>
+    <h2>Open questions, the descope ladder and when to replan</h2>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Open question</th><th>Cheapest experiment that answers it</th><th>When</th><th>If the answer is bad</th></tr></thead>
+      <tbody>
+{{OPENQ}}
+      </tbody>
+    </table>
+  </div>
+  <div class="grid2">
+    <div class="panel">
+      <h3>Descope ladder (decided now)</h3>
+      <ol class="ladder">
+{{LADDER}}
+      </ol>
+    </div>
+    <div class="grid2" style="grid-template-columns:1fr">
+      <div class="panel floor"><h3>Floor</h3><p>Case 1 and Case 2 automated to spec, FT-01 calibrated with Q = af + b and R², the P&amp;ID, the 10–12 min Challenge Video, the 3–4 min Journey Video and the handwritten paper. Nothing on the ladder may cost the floor.</p></div>
+      <div class="panel kill"><h3>Scope kill rule</h3><p>If Case 1 is not passing by Sat 14:00, every extra stops until it does. If Case 2 is not passing by Sat 22:00, record with the timed BV-01 window and the timeout backstop, and say so on camera.</p></div>
+      <div class="panel"><h3>Replan triggers</h3>
+        <ul class="tight">
+{{TRIGGERS}}
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sheet" id="downloads">
+  <div class="sheet-head">
+    <p class="eyebrow">Sheet 11 · Downloads and revision history</p>
+    <h2>Everything needed to build it</h2>
+  </div>
+  <div class="grid2">
+    <div class="tool">
+      <header><h3>Build kit (the team)</h3></header>
+      <p>Firmware (one source that builds in PlatformIO and the Arduino IDE), the Python bench tools, the simulator, practice data, a CSV template, the printables and a README with the bring-up order.</p>
+      <div class="fields">
+        <button class="primary" id="dl-kit" type="button">Download build kit (.zip)</button>
+      </div>
+      <header><h3>Printables (print at 100%, no fit to page)</h3></header>
+      <div class="fields">
+        <button class="ghost" id="dl-labels" type="button">Tag and flow labels (A4 .svg)</button>
+        <button class="ghost" id="dl-dial" type="button">BV-02 dial (A4 .svg)</button>
+        <button class="ghost" id="dl-pid" type="button">P&amp;ID (.svg, print A3)</button>
+        <button class="ghost" id="dl-wiring" type="button">Wiring diagram E-01 (.svg, print A3)</button>
+      </div>
+      <header><h3>Code to share (the judges)</h3></header>
+      <p class="small">Firmware, analysis tools and diagrams with a README written for the judges. It leaves out the simulator and the practice data, so nothing simulated reaches the submission. Download it from the final revision on Sunday and fill in the results in its README.</p>
+      <div class="fields">
+        <button class="ghost" id="dl-share" type="button">Code package (.zip)</button>
+      </div>
+      <p class="note" id="dl-note"></p>
+    </div>
+    <div class="panel">
+      <h3>Build kit contents</h3>
+      <ul class="tight">
+        <li><code>firmware/lam_flow_rig/</code>: <code>pio run -t upload</code> on core 2.0.17 (also builds on 3.1.3)</li>
+        <li><code>firmware/lam_flow_rig/lam_flow_rig.ino</code>: open it in the Arduino IDE with esp32 core 2.0.17, board "NodeMCU-32S". It compiles the same <code>src/main.cpp</code>, checked with arduino-cli.</li>
+        <li><code>tools/rig_console.py</code>: live trends, logging, commands, <code>SHOT</code> and automatic screenshots</li>
+        <li><code>tools/cal_fit.py</code>, <code>analyze_run.py</code>, <code>theory.py</code></li>
+        <li><code>print/</code>: tag labels, BV-02 dial, P&amp;ID; <code>templates/cal_runs.csv</code>; <code>README.md</code></li>
+        <li><code>tools/samples/simulated_take_*.csv</code>: a simulated full take for practising <code>--replay</code> and the plots. Practice only; never submit it.</li>
+        <li><code>firmware/lam_flow_rig/test/</code>: the software-in-the-loop simulator</li>
+      </ul>
+    </div>
+  </div>
+  <div class="panel">
+    <h3>Revision history</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Rev</th><th>Review run</th><th>Improvements</th></tr></thead>
+        <tbody>
+{{CHANGELOG}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+{{SCRIPT}}
+</script>

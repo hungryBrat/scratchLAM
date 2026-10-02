@@ -1,0 +1,2099 @@
+<style>header.wrap, nav.index {display:none} section.sheet:not(#downloads) {display:none}</style><title>Hardware Hustle Build Book</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: an engineering dossier. Title block up top, a sticky sheet index, then sheets:
+   plan first (what to do next), design sheets (P&ID, wiring, logic), then bench tools. */
+:root {
+  --bg: #f2f4f5;
+  --panel: #ffffff;
+  --ink: #15212b;
+  --muted: #55646e;
+  --rule: #d3dbe0;
+  --accent: #0b6a8f;
+  --accent-soft: #e1eef4;
+  --ok: #2e7d4f;
+  --warn: #9a5c00;
+  --bad: #b3261e;
+  --pw: #8a4a12;
+  --sig: #6b7780;
+  --font-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --font-body: "Barlow", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --radius: 6px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1418; --panel: #151d23; --ink: #e2e9ee; --muted: #98a6b0; --rule: #27333c;
+    --accent: #52b2d8; --accent-soft: #15303c; --ok: #5cc08a; --warn: #e2a54b; --bad: #f06b62;
+    --pw: #e19a5c; --sig: #8995a0; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1418; --panel: #151d23; --ink: #e2e9ee; --muted: #98a6b0; --rule: #27333c;
+  --accent: #52b2d8; --accent-soft: #15303c; --ok: #5cc08a; --warn: #e2a54b; --bad: #f06b62;
+  --pw: #e19a5c; --sig: #8995a0; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-inline: 16px; padding-block: 0 64px; }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.1; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(34px, 6vw, 56px); font-weight: 700; letter-spacing: .2px; }
+h2 { font-size: clamp(26px, 4vw, 34px); font-weight: 600; }
+h3 { font-size: 20px; font-weight: 600; }
+p { margin: 0; }
+a { color: var(--accent); }
+code, .mono, kbd { font-family: var(--font-mono); font-size: .88em; }
+.eyebrow { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.lede { color: var(--muted); max-width: 68ch; font-size: 16px; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* title block */
+.titleblock { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 24px; align-items: end; padding-block: 36px 22px; border-bottom: 2px solid var(--ink); }
+.titleblock .name { display: grid; gap: 10px; min-width: 0; }
+.tb-grid { display: grid; grid-template-columns: repeat(2, minmax(120px, auto)); border: 1.5px solid var(--ink); margin: 0; font-size: 13px; }
+.tb-grid div { padding: 6px 10px; border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.tb-grid div:nth-child(2n) { border-right: 0; }
+.tb-grid dt { font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.tb-grid dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+.tb-grid .wide { grid-column: span 2; border-right: 0; }
+#countdown { color: var(--accent); }
+@media (max-width: 760px) { .titleblock { grid-template-columns: 1fr; } }
+
+/* sheet index */
+.index { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--rule); }
+.index ol { list-style: none; margin: 0 auto; max-width: 1120px; padding: 8px 16px; display: flex; gap: 4px 14px; overflow-x: auto; white-space: nowrap; scrollbar-width: thin; }
+.index a { font-family: var(--font-mono); font-size: 12px; text-decoration: none; color: var(--muted); padding: 4px 2px; }
+.index a:hover { color: var(--ink); }
+.index a span { color: var(--accent); margin-right: 4px; }
+
+section.sheet { padding-block: 44px 8px; border-bottom: 1px solid var(--rule); display: grid; gap: 18px; scroll-margin-top: 48px; }
+.sheet-head { display: grid; gap: 6px; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 860px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
+.panel { background: var(--panel); border: 1px solid var(--rule); border-radius: var(--radius); padding: 16px 18px; min-width: 0; }
+.panel h3 { margin-bottom: 8px; }
+.panel > * + * { margin-top: 8px; }
+
+/* contract */
+.contract { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; margin-top: 22px; align-items: start; }
+@media (max-width: 860px) { .contract { grid-template-columns: 1fr; } }
+.contract .obj { border-left: 4px solid var(--accent); }
+.contract .obj p + p { margin-top: 10px; }
+.tag { display: inline-block; font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+ul.tight { margin: 4px 0 0; padding-left: 18px; }
+ul.tight li + li { margin-top: 3px; }
+
+/* findings */
+.findings { display: grid; gap: 0; border-top: 1px solid var(--rule); }
+.finding { display: grid; grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr); gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--rule); align-items: start; }
+.finding .arrow { color: var(--accent); font-family: var(--font-mono); text-align: center; }
+.finding .dec { font-weight: 600; }
+.finding .src { display: block; margin-top: 4px; font-size: 12px; color: var(--muted); }
+@media (max-width: 720px) { .finding { grid-template-columns: 1fr; } .finding .arrow { text-align: left; } }
+
+/* milestones */
+.milestones { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 860px) { .milestones { grid-template-columns: 1fr; } }
+.ms { background: var(--panel); border: 1px solid var(--rule); border-radius: var(--radius); padding: 14px 16px 16px; display: grid; gap: 8px; min-width: 0; align-content: start; }
+.ms header { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; }
+.ms .id { font-family: var(--font-display); font-weight: 700; font-size: 26px; color: var(--accent); line-height: 1; }
+.ms h3 { font-size: 19px; flex: 1 1 240px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.chip { font-family: var(--font-mono); font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--rule); color: var(--muted); white-space: nowrap; }
+.chip.crit { border-color: var(--accent); color: var(--accent); }
+.ms dl { margin: 0; display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 6px 10px; font-size: 14px; }
+.ms dt { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding-top: 2px; }
+.ms dd { margin: 0; }
+@media (max-width: 520px) { .ms dl { grid-template-columns: 1fr; gap: 2px; } .ms dt { padding-top: 6px; } }
+
+/* tables */
+.tablewrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--panel); }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { text-align: left; vertical-align: top; padding: 7px 10px; border-bottom: 1px solid var(--rule); }
+th { font-family: var(--font-mono); font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); background: var(--bg); position: sticky; top: 0; }
+tbody tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+td code { white-space: nowrap; }
+
+/* run sheet */
+.runsheet { min-width: 980px; display: grid; grid-template-columns: 150px repeat(9, minmax(0, 1fr)); font-size: 12.5px; }
+.runsheet > div { padding: 7px 8px; border-bottom: 1px solid var(--rule); border-right: 1px solid var(--rule); min-width: 0; }
+.runsheet .hd { font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); background: var(--bg); text-transform: uppercase; letter-spacing: .05em; }
+.runsheet .lane { font-weight: 600; background: var(--bg); }
+.runsheet .m { display: inline-block; font-family: var(--font-mono); font-size: 10.5px; color: var(--accent); }
+.runsheet .all { grid-column: span 1; background: var(--accent-soft); }
+
+/* figures */
+figure { margin: 0; display: grid; gap: 8px; }
+.figscroll { overflow-x: auto; background: var(--panel); border: 1px solid var(--rule); border-radius: var(--radius); padding: 10px; }
+figcaption { font-size: 13.5px; color: var(--muted); max-width: 90ch; }
+svg.diagram { display: block; width: 100%; height: auto; min-width: 920px; color: var(--ink); }
+svg.diagram text { font-family: var(--font-mono); fill: var(--ink); }
+svg.diagram .t { font-size: 12px; }
+svg.diagram .ts { font-size: 10.5px; fill: var(--muted); }
+svg.diagram .tb { font-size: 12.5px; font-weight: 700; }
+svg.diagram .tbub { font-size: 9.5px; font-weight: 700; }
+svg.diagram .io { font-size: 10.5px; font-weight: 600; fill: var(--accent); }
+svg.diagram .ln { fill: none; stroke: var(--accent); stroke-width: 3; }
+svg.diagram .pw { fill: none; stroke: var(--pw); stroke-width: 2.6; }
+svg.diagram .wire { fill: none; stroke: var(--ink); stroke-width: 1.6; }
+svg.diagram .sig { fill: none; stroke: var(--sig); stroke-width: 1.3; stroke-dasharray: 5 4; }
+svg.diagram .tr { fill: none; stroke: var(--ink); stroke-width: 1.4; }
+svg.diagram .eq { fill: none; stroke: var(--ink); stroke-width: 2; }
+svg.diagram .eq.thin { stroke-width: 1.1; }
+svg.diagram .pumpfill { fill: var(--panel); }
+svg.diagram .vlv { fill: var(--panel); stroke: var(--ink); stroke-width: 1.6; }
+svg.diagram .box, svg.diagram .res, svg.diagram .bub { fill: var(--panel); stroke: var(--ink); stroke-width: 1.4; }
+svg.diagram .box.hot { stroke: var(--bad); }
+svg.diagram .liq { fill: var(--accent); fill-opacity: .13; }
+svg.diagram .dot { fill: var(--ink); }
+svg.diagram .fa { fill: var(--accent); }
+svg.diagram .pa { fill: var(--pw); }
+svg.diagram .ta { fill: var(--ink); }
+svg.diagram .elec { stroke: var(--warn); stroke-width: 6; }
+svg.diagram .probe { fill: var(--warn); }
+dl.q2 { margin: 0; display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 8px 12px; }
+dl.q2 dt { font-family: var(--font-mono); font-weight: 600; color: var(--accent); }
+dl.q2 dd { margin: 0; }
+svg.diagram .st { fill: var(--panel); stroke: var(--ink); stroke-width: 1.5; }
+svg.diagram .st.done { stroke: var(--ok); stroke-width: 2.5; }
+svg.diagram .st.stop { stroke: var(--bad); }
+
+/* status pills */
+.pill { display: inline-block; font-family: var(--font-mono); font-size: 11px; padding: 1px 7px; border-radius: 4px; border: 1px solid currentColor; }
+.pill.ok { color: var(--ok); } .pill.warn { color: var(--warn); } .pill.bad { color: var(--bad); } .pill.info { color: var(--accent); }
+
+/* forms and tools */
+.tool { background: var(--panel); border: 1px solid var(--rule); border-radius: var(--radius); padding: 16px 18px; display: grid; gap: 12px; min-width: 0; align-content: start; }
+.tool > header { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; justify-content: space-between; }
+.fields { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: end; }
+.field { display: grid; gap: 3px; }
+.field label { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+input[type="number"], input[type="text"], select, textarea { font: inherit; font-size: 14px; color: var(--ink); background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; padding: 6px 8px; min-width: 0; }
+input[type="number"] { width: 108px; font-variant-numeric: tabular-nums; }
+input.narrow { width: 82px; }
+textarea { width: 100%; font-family: var(--font-mono); font-size: 12.5px; min-height: 64px; }
+button { font: inherit; font-size: 13.5px; font-weight: 600; color: var(--ink); background: var(--panel); border: 1px solid var(--ink); border-radius: 4px; padding: 6px 12px; cursor: pointer; }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--panel); }
+button.ghost { border-color: var(--rule); font-weight: 500; }
+button:disabled { opacity: .45; cursor: not-allowed; }
+.out { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.kv { border: 1px solid var(--rule); border-radius: 4px; padding: 8px 10px; background: var(--bg); min-width: 0; }
+.kv .k { font-family: var(--font-mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.kv .v { font-family: var(--font-mono); font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.kv .v small { font-size: 12px; color: var(--muted); font-weight: 400; }
+.cmd { display: flex; gap: 8px; align-items: stretch; flex-wrap: wrap; }
+.cmd pre { flex: 1 1 260px; margin: 0; background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; padding: 8px 10px; font-family: var(--font-mono); font-size: 12.5px; white-space: pre-wrap; overflow-x: auto; min-width: 0; }
+.note { font-size: 13px; color: var(--muted); }
+.banner { border: 1px dashed var(--warn); color: var(--warn); border-radius: 4px; padding: 6px 10px; font-size: 13px; }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { font-family: var(--font-mono); font-size: 11px; fill: var(--muted); }
+.chart .axis { stroke: var(--rule); stroke-width: 1; }
+.chart .grid { stroke: var(--rule); stroke-width: 1; stroke-dasharray: 2 3; }
+.chart .fit { stroke: var(--ink); stroke-width: 1.8; fill: none; }
+.chart .ds { stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 4 4; fill: none; }
+.chart .band { fill: var(--accent); fill-opacity: .12; stroke: none; }
+.chart .pt { fill: var(--accent); stroke: var(--panel); stroke-width: 1.5; }
+.chart .zero { stroke: var(--muted); stroke-width: 1; }
+.chart .okband { fill: var(--ok); fill-opacity: .08; }
+
+/* checklists */
+.checks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
+@media (max-width: 860px) { .checks { grid-template-columns: 1fr; } }
+.cgroup { background: var(--panel); border: 1px solid var(--rule); border-radius: var(--radius); padding: 12px 14px; min-width: 0; }
+.cgroup header { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; margin-bottom: 6px; }
+.cgroup h3 { font-size: 17px; }
+.bar { height: 4px; background: var(--rule); border-radius: 2px; overflow: hidden; margin-bottom: 8px; }
+.bar i { display: block; height: 100%; background: var(--ok); width: 0; transition: width .3s; }
+.citem { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 4px 8px; padding: 6px 0; border-top: 1px solid var(--rule); font-size: 14px; }
+.citem input { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--ok); }
+.citem .who { grid-column: 2; font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+.citem.done label { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--rule); }
+
+/* team */
+.team { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
+@media (max-width: 860px) { .team { grid-template-columns: 1fr; } }
+.role { background: var(--panel); border: 1px solid var(--rule); border-top: 4px solid var(--accent); border-radius: var(--radius); padding: 14px 16px; display: grid; gap: 8px; min-width: 0; align-content: start; }
+.role header { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; }
+.role .id { font-family: var(--font-display); font-weight: 700; font-size: 26px; color: var(--accent); line-height: 1; }
+.role h3 { font-size: 19px; flex: 1 1 180px; }
+.role input.rolename { width: 100%; max-width: 260px; }
+.role .fit { font-size: 14px; color: var(--muted); margin: 0; }
+.role h4 { font-family: var(--font-mono); font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 6px 0 0; }
+.role ul { margin: 0; padding-left: 18px; font-size: 14px; }
+.role p { margin: 0; font-size: 14px; }
+pre.msg { margin: 0; background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; padding: 10px 12px; font-family: var(--font-mono); font-size: 12.5px; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 440px; overflow-y: auto; }
+.bench input[type="text"] { width: 100%; min-width: 150px; }
+.bench .who { font-family: var(--font-mono); font-size: 11px; color: var(--muted); white-space: nowrap; }
+
+/* storyboard */
+.sb { counter-reset: shot; }
+.ladder { margin: 0; padding-left: 0; list-style: none; display: grid; gap: 8px; counter-reset: step; }
+.ladder li { counter-increment: step; display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 10px; align-items: start; }
+.ladder li::before { content: counter(step); font-family: var(--font-display); font-weight: 700; font-size: 20px; color: var(--accent); line-height: 1.2; }
+.floor { border-left: 4px solid var(--ok); }
+.kill { border-left: 4px solid var(--bad); }
+.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 8px 14px; border-radius: 4px; font-size: 13px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 20; }
+.toast.on { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<header class="wrap">
+  <div class="titleblock">
+    <div class="name">
+      <p class="eyebrow">LAM Research Challenge 3.0 · Stage 2 · Hardware Hustle</p>
+      <h1>Hardware Hustle Build Book</h1>
+      <p class="lede">The plan of record for the automated three-pump flow rig: what to build, in what order, how each step is proven, and the bench tools to prove it. Everything here is written for the team at the bench. New to the book? Find your role on <a href="#path">sheet 02</a>.</p>
+    </div>
+    <dl class="tb-grid">
+      <div><dt>Doc</dt><dd>HH-BB-01</dd></div>
+      <div><dt>Revision</dt><dd>E · team split, Friday start</dd></div>
+      <div><dt>Issued</dt><dd>Fri 2 Oct 2026</dd></div>
+      <div><dt>Upload by</dt><dd>Sun 4 Oct · 18:00 IST</dd></div>
+      <div class="wide"><dt>Time to upload cutoff</dt><dd id="countdown">calculating</dd></div>
+    </dl>
+  </div>
+  <div class="contract">
+    <div class="panel obj">
+      <span class="tag">Objective</span>
+      <p><strong>By Sunday 4 October, 18:00 IST, upload a 10–15 minute video, labelled photos, an ISA-5.1 P&amp;ID and the completed paper.</strong> Together they must show a leak-free, ESP32-automated rig that runs Case 1 into Case 2 in one go, holds 3.0 L/min on an FT-01 calibrated in place by weighing, and stops within about one second of the flush tank running dry.</p>
+      <span class="tag">Done when</span>
+      <p>The single-take run (switch press → Case 1 with the external-fluid event → automatic Case 2 → automatic stop) passes three rehearsals in a row and is on video. Calibration R² ≥ 0.995, with maximum and average error reported. Every Task 1–3 question has measured data and a graph.</p>
+    </div>
+    <div class="panel">
+      <span class="tag">Not doing</span>
+      <ul class="tight">
+        <li>Wi-Fi, web or cloud dashboards. ADC2 dies with Wi-Fi on, and USB is safer on camera.</li>
+        <li>A machine-learning fault classifier. There is no training data, and a rule table is explainable.</li>
+        <li>Touching the FT-01 spool after calibration, or any tubing that arrives after Friday.</li>
+        <li>The pressure transducer: ordered on Friday it arrives too late to install and validate.</li>
+        <li>Rework of the custom PCB. All additions go on a small add-on board.</li>
+      </ul>
+      <span class="tag">Constraints that bind</span>
+      <ul class="tight">
+        <li>About 2.5 build days. One rig and one scale are shared by everyone.</li>
+        <li>Kit plus passives on hand. Online parts take 1–3 days, so they can only be upgrades.</li>
+        <li>Pumps cut out at 8.25 bar. FT-01 is rated 0.8 MPa and the push-fits about 1 MPa.</li>
+      </ul>
+    </div>
+  </div>
+</header>
+
+<nav class="index" aria-label="Sheets">
+  <ol>
+    <li><a href="#win"><span>00</span>Top 3</a></li>
+    <li><a href="#decisions"><span>01</span>Decisions</a></li>
+    <li><a href="#path"><span>02</span>Team &amp; path</a></li>
+    <li><a href="#hydraulics"><span>03</span>Hydraulics</a></li>
+    <li><a href="#electrical"><span>04</span>Electrical</a></li>
+    <li><a href="#control"><span>05</span>Control</a></li>
+    <li><a href="#calibration"><span>06</span>Bench log &amp; cal</a></li>
+    <li><a href="#answers"><span>07</span>Answers</a></li>
+    <li><a href="#checklists"><span>08</span>Checklists</a></li>
+    <li><a href="#video"><span>09</span>Video</a></li>
+    <li><a href="#risks"><span>10</span>Risks</a></li>
+    <li><a href="#downloads"><span>11</span>Downloads</a></li>
+  </ol>
+</nav>
+
+<main class="wrap">
+
+<section class="sheet" id="win">
+  <div class="sheet-head">
+    <p class="eyebrow">Sheet 00 · Strategy</p>
+    <h2>How we place top 3</h2>
+    <p class="lede">Hardware Hustle sends 25 of its 50 teams to the Grand Finale. Top 3 means doing everything the round asks, visibly, with nothing missing, and then showing judgement that other teams do not.</p>
+  </div>
+  <div class="panel obj">
+    <span class="tag">What this round rewards, in its own words</span>
+    <p>“Using the provided kit, teams must design, build, test, and validate a working physical system – no simulations, no shortcuts. Teams will acquire real data, characterise system performance, and validate results through calculations, plots, and rigorous engineering interpretation.”</p>
+    <p>Grand Finale judges evaluate “system architecture, component selection, control strategy, implementation, optimisation, troubleshooting, and overall engineering execution”. Lam describes the challenge as integrating “hardware, software, systems thinking, agility, and project management”.</p>
+    <p class="small muted">Sources: <a href="https://unstop.com/competitions/the-lam-research-challenge-2026-e-cell-iit-bombay-x-lam-research-x-t-works-iit-bombay-1737137" target="_blank" rel="noopener">Unstop: Lam Research Challenge 2026</a> · <a href="https://lrc2026.tworks.in/" target="_blank" rel="noopener">LRC 2026 (T-Works)</a> · <a href="https://www.industrialautomationindia.in/news/lam-research-announces-2025-systems-engineering-competition-winners" target="_blank" rel="noopener">2025 winners, Industrial Automation India</a></p>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Where we win points</th><th>What it means here</th><th>The evidence that shows it</th></tr></thead>
+      <tbody>
+        <tr><td>Nothing missing</td><td>Every line of the paper traced to its evidence (requirements checklist, sheet 08). A missed requirement costs more than any extra earns.</td><td>Requirements checklist all ticked; a second person signs it off</td></tr>
+        <tr><td>The problem statement's spine, shown live</td><td>Establish → measure → detect → diagnose → restore. Case 1 establishes 3.0 L/min, the weighed FT-01 measures it, the pour and the fault demos are detected, the console names the cause, and P-01's restart and FIC restore the flow.</td><td>Five chapter cards in the video, each followed by its evidence</td></tr>
+        <tr><td>Numbers you can trust</td><td>Weighing as the reference, repeats, the uncertainty at 3 L/min, and a calibration certificate. Every plot carries units, a caption and one line of interpretation.</td><td>Certificate, calibration plot, trend plots, Q2 tables</td></tr>
+        <tr><td>Judgement backed by data</td><td>Each design choice cites the measurement that forced it (decision log below): the SOV orifice and P-01's duty, FT-01's pressure rating, the 8 mm OD, the probe height.</td><td>Decision log read out in the video and written into the paper</td></tr>
+        <tr><td>Execution that looks like industry</td><td>P&amp;ID tags on the hardware, fail-safe states, interlocks, a drip tray, a tidy labelled harness, and one unbroken take with no hidden hand.</td><td>Annotated photos, single take, P&amp;ID</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="grid2">
+    <div class="panel kill">
+      <h3>What loses points</h3>
+      <ul class="tight">
+        <li>A required answer missing or vague: no Q2.3 table, no R², no Q3.2 for every condition.</li>
+        <li>A demo with a hidden hand: anything touched in Cases 1–2 other than BV-01.</li>
+        <li>Plots without units, captions or interpretation; screenshots unreadable at 1080p.</li>
+        <li>Simulated, estimated or invented numbers presented as data. The round says “no simulations”: every submitted number comes from the rig.</li>
+        <li>Leaks, dangling wires or wet electronics anywhere in frame.</li>
+        <li>Buzzwords without evidence (“AI”, “smart”, “state of the art”). Name the method and show its result.</li>
+        <li>A video over 15 minutes, weak audio, or a component never named.</li>
+        <li>No code shared, although the paper asks for it.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3>The judges' vocabulary, used only where we show it</h3>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Term</th><th>Where it applies on our rig</th></tr></thead>
+          <tbody>
+        <tr><td>FDC (fault detection and classification)</td><td>the diagnosis layer that names a fault from flow and current signatures</td></tr>
+        <tr><td>Interlock · permissive · fail-safe</td><td>I-1 to I-4; the NC valve and float wiring that fail to the safe state</td></tr>
+        <tr><td>Installed vs inherent characteristic</td><td>why BV-02's curve is flat with a positive-displacement pump</td></tr>
+        <tr><td>K-factor · turndown · uncertainty (k = 2)</td><td>what the calibration certificate reports</td></tr>
+        <tr><td>Residence time · RTD · dead leg</td><td>Q3.1, the mixed-sump washout, the short tee branch</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="panel floor">
+    <h3>Grand Finale readiness (start Monday if we advance)</h3>
+    <p class="small muted">The finale is offline, on a kit at the venue, and judges troubleshooting live. Practise for that now.</p>
+    <ul class="tight">
+      <li>Rebuild drill: strip and rebuild the loop from the fitting map against the clock. Target under 60 minutes.</li>
+      <li>One-page quick reference: pin map, console commands, parameters and the first-water order.</li>
+      <li>Troubleshooting drill: inject each fault from sheet 05 and clear it against the clock.</li>
+      <li>Keep the firmware generic: calibration and duties are parameters (SET/SAVE), never hard-coded.</li>
+      <li>Each member explains one design trade-off in 60 seconds, from memory.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="sheet" id="decisions">
+  <div class="sheet-head">
+    <p class="eyebrow">Sheet 01 · Ground truth</p>
+    <h2>What we found, and the decision each finding forces</h2>
+    <p class="lede">Each finding is checked against a primary source or the kit itself. If a finding turns out to be wrong at the bench, that is a replan trigger (sheet 10).</p>
+  </div>
+  <div class="findings">
+    <div class="finding"><div>FT-01 is a YF-S401: 5,880 pulses per litre (F = 98·Q), 0.3–6 L/min, ±10% uncalibrated, output high above 4.5 V on a 5 V supply, rated 0.8 MPa.</div><div class="arrow" aria-hidden="true">→</div><div><span class="dec">Level-shift the pulse to 3.3 V before G14. Mount FT-01 after BV-02 so it never sees the pumps' 8.25 bar cut-off. Calibrate it in place.</span><span class="src">Source: <a href="https://www.tinytronics.nl/en/sensors/liquid/yf-s401-water-flow-sensor" target="_blank" rel="noopener">TinyTronics YF-S401</a> · <a href="https://bc-robotics.com/shop/liquid-flow-meter-yf-s401/" target="_blank" rel="noopener">BC Robotics YF-S401</a></span></div></div>
+    <div class="finding"><div>The paper's “8 mm pipe” is the tube's outside diameter. The kit tube is 8 mm OD × 5 mm ID, so 3 L/min runs at 2.55 m/s (Re ≈ 12,700), not 0.99 m/s, with about 19 kPa of friction per metre.</div><div class="arrow" aria-hidden="true">→</div><div><span class="dec">Measure the bore with calipers on day one and use it in Q1.2. Expect the loop's maximum to fall short of 6 L/min, and explain why with the pump and system curves.</span><span class="src">Source: Kit list, item 1 (PU tube 8 mm OD × 5 mm ID)</span></div></div>
+    <div class="finding"><div>SOV-01's label reads 0–10 kg/cm², so it is a zero-differential (direct-acting) valve and will open on P-01's suction side. ¼-inch valves of this class (e.g. 2W025-08) have a 2.5 mm orifice (Cv ≈ 0.23), which costs about 0.8 bar at 3 L/min, all of it on the suction side.</div><div class="arrow" aria-hidden="true">→</div><div><span class="dec">Test P-01's flow through SOV-01 in hour one. Raise TK-01 for flooded suction and use the strongest pump as P-01. If 50% duty cannot carry 3.0 L/min, raise the duty and show the data (3.0 L/min wins).</span><span class="src">Source: <a href="https://valveman.com/products/stc2w025-1-4-solenoid-valve-1-4-npt-2-way-normally-closed/" target="_blank" rel="noopener">STC 2W025 data (Cv 0.23)</a></span></div></div>
+    <div class="finding"><div>Each IBT-2 IS pin has 10 kΩ to GND (5 kΩ when the two are tied), giving 0.59 V/A nominal. The BTS7960 sense ratio spreads from 3,000 to 14,000, so a pin can see 8 V. The 74HC244 buffer powered at 5 V needs about 3.5 V for a logic HIGH.</div><div class="arrow" aria-hidden="true">→</div><div><span class="dec">Add 3.3 kΩ (about 2 kΩ total, 0.24 V/A), then 10 kΩ in series and 100 nF at the pin. Calibrate each channel against the DMM. Power the IBT-2 VCC from 3.3 V.</span><span class="src">Source: <a href="https://dcc-ex.com/reference/hardware/motorboards/IBT_2-motor-board-setup.html" target="_blank" rel="noopener">DCC-EX IBT_2 current-sense notes</a></span></div></div>
+    <div class="finding"><div>Rotor meters read 2–5% high in pulsating flow. A hall flow sensor's frequency also depends on the pipe attached to it and on its orientation.</div><div class="arrow" aria-hidden="true">→</div><div><span class="dec">Calibrate with P-02 pumping through the final installed spool, so the pulsation and plumbing are the real ones. Freeze that spool afterwards.</span><span class="src">Source: <a href="https://www.recip.org/wp-content/uploads/2020/12/EFRC-Guidelines-Flow-Meter-Errors-in-Pulsating-Flow-of-Reciprocating-Compressor-Systems-December-2020.pdf" target="_blank" rel="noopener">EFRC guideline, pulsating-flow meter errors</a> · <a href="https://ieeexplore.ieee.org/document/8307842/" target="_blank" rel="noopener">IEEE 8307842</a></span></div></div>
+    <div class="finding"><div>Static weighing (ISO 4185) is a primary method for calibrating flow meters, provided the line runs full.</div><div class="arrow" aria-hidden="true">→</div><div><span class="dec">Calibrate by weight on the 1 g scale. The ESP32 times each run itself, so the pulse count and the collected mass share one window.</span><span class="src">Source: <a href="https://cdn.standards.iteh.ai/samples/9959/8f87749e47c84061b7a6495487300f9b/ISO-4185-1980.pdf" target="_blank" rel="noopener">ISO 4185 preview</a></span></div></div>
+    <div class="finding"><div>ESP32 touch sensing works through a plastic wall, but the threshold is specific to each placement and the reading drifts. A foil on the wall also trips while water still covers the pickup, so on camera the system would stop with the tank visibly unfinished.</div><div class="arrow" aria-hidden="true">→</div><div><span class="dec">Make LSL-03 a bare-wire probe on the touch pin, taped at the dip-tube inlet. It goes dry exactly when P-03 can no longer draw. Re-capture the wet reading every run. P-03's current then separates “empty” from “BV-01 still shut”, and a timeout backs both up.</span><span class="src">Source: <a href="https://randomnerdtutorials.com/esp32-touch-pins-arduino-ide/" target="_blank" rel="noopener">Random Nerd Tutorials, ESP32 touch</a> · <a href="https://maakbaas.com/esp32-soil-moisture-sensor/logs/testing-the-sensor/" target="_blank" rel="noopener">Maakbaas, touch as a level sensor</a></span></div></div>
+    <div class="finding"><div>ADC2 cannot be read while Wi-Fi is on, and only G36 and G39 are free ADC1 pins on this PCB.</div><div class="arrow" aria-hidden="true">→</div><div><span class="dec">Keep Wi-Fi off and stream telemetry over USB to the laptop console. G15 (ADC2) carries the third current channel.</span><span class="src">Source: <a href="https://docs.espressif.com/projects/esp-idf/en/v4.4/esp32/api-reference/peripherals/adc.html" target="_blank" rel="noopener">Espressif ADC documentation</a></span></div></div>
+  </div>
+</section>
+
+<section class="sheet" id="path">
+  <div class="sheet-head">
+    <p class="eyebrow">Sheet 02 · Team and critical path</p>
+    <h2>Four roles, seven milestones, ordered by the risk each one retires</h2>
+    <p class="lede">Each person owns part of this book and starts with the first steps on their card. The critical path runs M1 → M2 → M3 → M4 → M5 → M7, about 2.5 days from Friday 08:00. M6 runs alongside and can slip without moving the upload.</p>
+  </div>
+  <p class="banner"><strong>08:00 stand-up, 10 minutes:</strong> write a name on each role, read the objective and the done-when together, and agree the four checkpoint times. The rig and the scale are shared: book them in the run sheet.</p>
+  <div class="team" id="team">
+    <article class="role" id="role-HY"><header><span class="id">HY</span><h3>Hydraulics lead</h3></header><div class="field"><label for="rn-HY">Name</label><input type="text" class="rolename" id="rn-HY" data-role="HY" placeholder="Who has this role?" autocomplete="off" maxlength="60"></div><p class="fit">Best fit: The most hands-on, patient member. Owns every joint, every tube and every litre of water.</p><h4>Owns in this book</h4><ul><li><a href="#hydraulics">03 Hydraulics: P&amp;ID, line list, fitting map, first water, inventory planner</a></li><li><a href="#video">09 Video: the 0.8 L pour and the reset between runs</a></li><li><a href="#checklists">08 Checklists: M2 hydraulic commissioning</a></li></ul><h4>Milestones</h4><p>M2 lead · M1 P-01 bucket tests · M3 bucket and BV-02 moves · M4 pour · M5 resets · M6 dye transit</p><h4>First steps · Fri 08–10</h4><div><div class="citem"><input type="checkbox" id="c-fs-hy-count" data-chk="fs-hy-count"><label for="c-fs-hy-count">Count every kit part against the fitting map (sheet 03). Give IV anything short before the parts run.</label><span class="who"></span></div><div class="citem"><input type="checkbox" id="c-fs-hy-bore" data-chk="fs-hy-bore"><label for="c-fs-hy-bore">Measure the tube bore and the FT-01 barbs; enter both in the bench log (sheet 06).</label><span class="who"></span></div><div class="citem"><input type="checkbox" id="c-fs-hy-stand" data-chk="fs-hy-stand"><label for="c-fs-hy-stand">Put the drip tray down. Raise TK-01 and TK-03 on stands so their water sits above the pump inlets.</label><span class="who"></span></div><div class="citem"><input type="checkbox" id="c-fs-hy-layout" data-chk="fs-hy-layout"><label for="c-fs-hy-layout">Lay the loop out dry to the P&amp;ID. Cut tubes to the line-list lengths only after the layout is checked.</label><span class="who"></span></div><div class="citem"><input type="checkbox" id="c-fs-hy-m1" data-chk="fs-hy-m1"><label for="c-fs-hy-m1">10:00: bucket on the scale and water ready for the P-01 test (M1).</label><span class="who"></span></div></div><h4>Hands over</h4><p>A leak-free loop to DC for calibration (Sat 08:00); the reset routine to the take crew.</p></article>
+    <article class="role" id="role-EF"><header><span class="id">EF</span><h3>Electronics and firmware lead</h3></header><div class="field"><label for="rn-EF">Name</label><input type="text" class="rolename" id="rn-EF" data-role="EF" placeholder="Who has this role?" autocomplete="off" maxlength="60"></div><p class="fit">Best fit: Whoever solders cleanly and is at home in a serial console. Owns everything electrical and the code on the ESP32.</p><h4>Owns in this book</h4><ul><li><a href="#electrical">04 Electrical: power, wiring, add-on board, I/O list</a></li><li><a href="#control">05 Control: state machine, interlocks, diagnostics, commands, parameters</a></li><li><a href="#checklists">08 Checklists: power-off check, M1 bring-up, M4 and M5 acceptance</a></li></ul><h4>Milestones</h4><p>M1 lead · M4 and M5 lead · console operator in every take · M6 fault demos and FIC</p><h4>First steps · Fri 08–10</h4><div><div class="citem"><input type="checkbox" id="c-fs-ef-flash" data-chk="fs-ef-flash"><label for="c-fs-ef-flash">Flash the bare ESP32 over USB, no 12 V: <code>pio run -t upload</code>, or the Arduino IDE sketch on core 2.0.17. Start the console; check <code>fw=1.1</code>, then <code>PINS</code>.</label><span class="who"></span></div><div class="citem"><input type="checkbox" id="c-fs-ef-addon" data-chk="fs-ef-addon"><label for="c-fs-ef-addon">Solder the add-on board (sheet 04): three IS channels, FT-01 divider pads, the LSL-03 probe lead.</label><span class="who"></span></div><div class="citem"><input type="checkbox" id="c-fs-ef-is" data-chk="fs-ef-is"><label for="c-fs-ef-is">DMM: measure each IBT-2's IS resistor to GND, unpowered; enter the values in the bench log.</label><span class="who"></span></div><div class="citem"><input type="checkbox" id="c-fs-ef-poweroff" data-chk="fs-ef-poweroff"><label for="c-fs-ef-poweroff">Run the power-off check (sheet 08), then apply 12 V with no pumps connected.</label><span class="who"></span></div><div class="citem"><input type="checkbox" id="c-fs-ef-m1" data-chk="fs-ef-m1"><label for="c-fs-ef-m1">10:00: start M1. Connect LS-01, or jumper FSW to GND, before any pump test.</label><span class="who"></span></div></div><h4>Hands over</h4><p>d1 after M1; a, b and fcut saved after M3; every changed parameter written in the bench log.</p></article>
+    <article class="role" id="role-DC"><header><span class="id">DC</span><h3>Data and calibration lead</h3></header><div class="field"><label for="rn-DC">Name</label><input type="text" class="rolename" id="rn-DC" data-role="DC" placeholder="Who has this role?" autocomplete="off" maxlength="60"></div><p class="fit">Best fit: The member most careful with numbers and comfortable with Python. Owns every number that reaches the paper.</p><h4>Owns in this book</h4><ul><li><a href="#calibration">06 Bench log and calibration: bench log, workbench, P-01 duty finder</a></li><li><a href="#answers">07 Answers: Q1.2, Q2.1–Q2.3, Q3.1, decision log</a></li><li><a href="#checklists">08 Checklists: laptop readiness, M3 calibration</a></li></ul><h4>Milestones</h4><p>M3 lead · M1 duty finder · Q1.2 and Q2.1 data · M6 analysis</p><h4>First steps · Fri 08–10</h4><div><div class="citem"><input type="checkbox" id="c-fs-dc-laptops" data-chk="fs-dc-laptops"><label for="c-fs-dc-laptops">Console laptop plus one spare: USB driver (CP210x or CH340), Python 3.10+, <code>pip install -r tools/requirements.txt</code>.</label><span class="who"></span></div><div class="citem"><input type="checkbox" id="c-fs-dc-replay" data-chk="fs-dc-replay"><label for="c-fs-dc-replay">Practise on the simulated take: <code>rig_console.py --replay</code>, type <code>SHOT</code>, then <code>analyze_run.py trend</code>. Practice only; never submit it.</label><span class="who"></span></div><div class="citem"><input type="checkbox" id="c-fs-dc-scale" data-chk="fs-dc-scale"><label for="c-fs-dc-scale">Weigh station: bucket on the 1 g scale, the tare routine, and a jug holding exactly 800 g of water for the pour.</label><span class="who"></span></div><div class="citem"><input type="checkbox" id="c-fs-dc-m1" data-chk="fs-dc-m1"><label for="c-fs-dc-m1">10:00: run the P-01 duty finder (sheet 06) with EF and HY, and keep the bench log.</label><span class="who"></span></div></div><h4>Hands over</h4><p>a, b and fcut to EF after M3; final numbers and plots to IV by Sun 12:00.</p></article>
+    <article class="role" id="role-IV"><header><span class="id">IV</span><h3>Integration, video and submission lead</h3></header><div class="field"><label for="rn-IV">Name</label><input type="text" class="rolename" id="rn-IV" data-role="IV" placeholder="Who has this role?" autocomplete="off" maxlength="60"></div><p class="fit">Best fit: The team's organiser. Owns the clock, the evidence and the upload.</p><h4>Owns in this book</h4><ul><li><a href="#win">00 Top 3 strategy, and the checkpoint calls on this sheet</a></li><li><a href="#video">09 Video: storyboard, run script, abort rule</a></li><li><a href="#checklists">08 Checklists: requirements coverage and M7 submission</a></li><li><a href="#downloads">11 Downloads: printables and the code to share</a></li></ul><h4>Milestones</h4><p>M7 lead · checkpoint calls · photos · final P&amp;ID · paper · upload</p><h4>First steps · Fri 08–10</h4><div><div class="citem"><input type="checkbox" id="c-fs-iv-org" data-chk="fs-iv-org"><label for="c-fs-iv-org">Send the organiser message below (copy button).</label><span class="who"></span></div><div class="citem"><input type="checkbox" id="c-fs-iv-share" data-chk="fs-iv-share"><label for="c-fs-iv-share">Share this build book with the other three (Share menu), so ticks, the workbench and the bench log are shared.</label><span class="who"></span></div><div class="citem"><input type="checkbox" id="c-fs-iv-parts" data-chk="fs-iv-parts"><label for="c-fs-iv-parts">Parts run when shops open: the buy-today list below, plus anything short from HY's count.</label><span class="who"></span></div><div class="citem"><input type="checkbox" id="c-fs-iv-print" data-chk="fs-iv-print"><label for="c-fs-iv-print">Print the tag labels, the BV-02 dial (both at 100% scale) and the P&amp;ID at A3 (sheet 11). Photograph the kit before assembly.</label><span class="who"></span></div><div class="citem"><input type="checkbox" id="c-fs-iv-draft" data-chk="fs-iv-draft"><label for="c-fs-iv-draft">Draft the Q3.1 and Q3.2 answers and the shot list. No hardware needed.</label><span class="who"></span></div></div><h4>Hands over</h4><p>Calls the checkpoints (Fri 14:00, Sat 13:00, Sat 18:00, Sat 22:00). Before upload, a second person checks the submission.</p></article>
+  </div>
+  <div class="panel">
+    <h3>Message to the organisers (IV, first thing Friday)</h3>
+    <p class="small muted">Fill in the team ID, team name and sender, then send it on the organisers' channel. Answers that differ from the assumptions are a replan trigger (sheet 10).</p>
+    <pre class="msg" id="org-msg">Subject: Stage 2 Hardware Hustle: clarifications from Team [Team ID] ([Team name])
+
+Hello LRC team,
+
+We are building the Stage 2 rig and have five quick questions. Short answers are fine.
+
+1. Pump-01 duty. Case 1 sets Pump-01 at 50%. The on/off valve sits in Pump-01&#x27;s suction line, so at 50% Pump-01 may deliver less than Pump-02 drains at 100%. If our measurements show this, may we raise Pump-01&#x27;s duty and justify it with the data, or must it stay at exactly 50%?
+
+2. Video. Case 1 and Case 2 will run in one go, as required. Must that run be one uncut shot? May the 10-15 minute video also include separately recorded segments, such as calibration, the valve test and fault demonstrations?
+
+3. Software. The hardware list mentions data-acquisition software. Is there an official program we must use, or may we use our own ESP32 firmware and laptop logger? We will share all of the code.
+
+4. Additions. May we add small parts that do not modify the kit or the custom PCB: a perfboard with resistors and capacitors for signal conditioning, a bare-wire level probe in the flush tank, spare push-fit fittings, and stands to raise the tanks?
+
+5. Submission. What is the exact deadline (date, time and time zone), and where do we upload? Are Drive or YouTube links acceptable for the video, and a GitHub or Drive link for the code? May the paper be typed, with extra pages for graphs?
+
+Unless you advise otherwise, we will also:
+a. Use ball valve BV-02 as the throttling valve, since the kit has no needle valve, and show it on the P&amp;ID.
+b. Return the flush water to the 10 L tank through Pump-02 and FT-01, the only return path.
+c. Run Case 1 for a fixed time (about 4 minutes, including the external-fluid event), then start Case 2 automatically.
+d. Report the measured maximum flow in Q1.2 if 6 L/min cannot be reached with the kit.
+e. Record Q2.1 at both 70% and 75%, because the question text and the table differ.
+f. Calculate the Q3.1 residence time as V/Q (12 s), and note that Q/V gives a rate rather than a time.
+g. Not drill or modify any kit part. The tanks are fed by dip tubes over the rim.
+
+Thank you,
+[Your name], Team [Team ID]</pre>
+    <div class="fields"><button class="ghost" type="button" data-copy-from="#org-msg">Copy message</button></div>
+  </div>
+  <div class="panel">
+    <h3>Buy today</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Item</th><th>Qty</th><th>Why</th><th>Where</th></tr></thead>
+        <tbody>
+        <tr><td>Push-in male straight connector, 8 mm tube × ¼" BSPT (pneumatic code PC 8-02)</td><td class="num">4</td><td>Spares. All 8 in the kit are used (SOV-01 and the three ball valves), so one cracked fitting would stop M2.</td><td>Pneumatic or industrial fittings shop. Not an RO shop: RO fittings take ¼" (6.35 mm) tube and do not fit 8 mm.</td></tr>
+        <tr><td>Push-in equal tee, 8 mm (PE 8)</td><td class="num">1</td><td>Spare for TEE-01; the kit has only one.</td><td>Same shop</td></tr>
+        <tr><td>PTFE thread tape</td><td class="num">1 roll</td><td>Seals the 8 threaded joints.</td><td>Hardware or plumbing shop</td></tr>
+        <tr><td>Small cable ties, 100–150 mm</td><td class="num">1 pack</td><td>Two per barbed joint: six pump ports and both ends of FT-01.</td><td>Hardware or electrical shop</td></tr>
+        <tr><td>1N5819 or 1N4007 diode</td><td class="num">2</td><td>Flyback across the SOV-01 coil. Only needed if the valve driver has none (check first).</td><td>Electronics shop</td></tr>
+        <tr><td>Drip tray the size of the rig, or a shallow storage-box lid</td><td class="num">1</td><td>Keeps a leak away from the SMPS and PCB.</td><td>Home or hardware store</td></tr>
+        <tr><td>Phone tripod or clamp</td><td class="num">1</td><td>Only if you have none: the single take needs a locked wide shot.</td><td>Mobile or electronics shop</td></tr>
+        <tr><td><em>Insurance:</em> ESP32 NodeMCU-32S, 38-pin (same pinout as U7)</td><td class="num">1</td><td>U7 sits in a socket, so if the ESP32 dies, a swap and reflash takes 5 minutes.</td><td>Electronics shop, or next-day delivery</td></tr>
+        <tr><td><em>Insurance:</em> BTS7960 (IBT-2) driver module</td><td class="num">1</td><td>A driver can fail on a stall or a short, and Case 2 needs all three.</td><td>Electronics shop, or next-day delivery</td></tr>
+        <tr><td><em>Insurance:</em> YF-S401 flow sensor</td><td class="num">1</td><td>If FT-01 fails after calibration: swap it and recalibrate (about 2 h).</td><td>Electronics shop, or next-day delivery</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Buy the first six on Friday morning; M2 needs them on Friday afternoon. Anything ordered online today arrives Saturday at the earliest, so online is only for the insurance items. The pressure transducer is dropped.</p>
+  </div>
+  <h3>Milestones</h3>
+  <div class="milestones">
+    <article class="ms"><header><span class="id">M1</span><h3>Rig physics proven on the bench</h3></header><div class="chips"><span class="chip crit">critical path</span><span class="chip">owner EF with HY</span><span class="chip">Fri 10–14</span></div><dl><dt>Do</dt><dd>Connect LS-01 first (or jumper FSW to GND): an open float input reads “sump high” and I-1 blocks P-01 and P-03. Run the power-off checks, then apply 12 V. Drive the three IBT-2s and the D4184 from the console (<code>MANUAL</code>, <code>P n duty</code>, <code>SOV 1</code>). Pump TK-01 → SOV-01 → P-01 into the bucket on the scale at 50, 60, 70 and 100% for 30 s each, using the P-01 duty finder. Scope the FT-01 output with and without a 10 kΩ load. Check every input with <code>PINS</code>. Calibrate IS against the DMM in series.</dd><dt>Done when</dt><dd>All three pumps start together (staggered) with no ESP32 reset. FT-01 at G14 is ≤ 3.3 V with clean edges, and the glitch count stays flat with the pumps running and FT-01 dry. The P-01 Q(duty) table exists and d1 is chosen to give ≥ 3.3 L/min.</dd><dt>Retires</dt><dd>SOV-01 starving P-01; 3.3 V logic into the IBT-2; motor noise in the pulse count; brown-out.</dd><dt>Estimate</dt><dd>half a day (confidence: medium)</dd></dl></article>
+    <article class="ms"><header><span class="id">M2</span><h3>Leak-free loop that matches the P&ID</h3></header><div class="chips"><span class="chip crit">critical path</span><span class="chip">owner HY</span><span class="chip">Fri 14–24</span></div><dl><dt>Do</dt><dd>Build to Figure 1: dip tubes, raised TK-01 and TK-03, the FT-01 spool with its straight runs, the BV-02 dial, and P&amp;ID tags and flow arrows on everything. Prime the loop, then run the leak test.</dd><dt>Done when</dt><dd>10 min at 3 L/min plus 2 min at BV-02 25% with zero wet tissue. No bubbles in the FT-01 spool. Flow CV under 3% over one minute. The LS-01 trip volume is measured.</dd><dt>Retires</dt><dd>Leaks, air in the meter, wrong routing.</dd><dt>Estimate</dt><dd>half a day (confidence: medium)</dd></dl></article>
+    <article class="ms"><header><span class="id">M3</span><h3>FT-01 calibrated and the required data recorded</h3></header><div class="chips"><span class="chip crit">critical path</span><span class="chip">owner DC</span><span class="chip">Sat 08–13</span></div><dl><dt>Do</dt><dd>Do 15 gravimetric <code>CAL</code> runs (5 flows × 3) and enter them in the workbench. Load a, b and fcut, verify at 3 L/min, then freeze the spool. Straight after, while the rig is set up, record the paper's required data: the BV-02 sweep (Q2.1) and the runs at about 1, 3 and maximum L/min (Q1.2).</dd><dt>Done when</dt><dd>R² ≥ 0.995, maximum error ≤ 3%, verification within ±2% of the scale. The Q2.1 table (25/50/70/75/100%) and the Q1.2 table hold measured values, with plots saved.</dd><dt>Retires</dt><dd>Calibration accuracy (team worry 2), and the risk of reaching Sunday with required answers still empty.</dd><dt>Estimate</dt><dd>5 h (confidence: high)</dd></dl></article>
+    <article class="ms"><header><span class="id">M4</span><h3>Case 1 passes acceptance</h3></header><div class="chips"><span class="chip crit">critical path</span><span class="chip">owner EF</span><span class="chip">Fri 20–24 dry · Sat 12–15 wet</span></div><dl><dt>Do</dt><dd>Set d1, then trim BV-02 so that P-02 at 100% gives 3.0 L/min. Run Case 1 and pour 0.8 L into TK-02 at about 90 s.</dd><dt>Done when</dt><dd>P-01 stops within 1.5 s of LS-01 tripping and restarts by itself after it clears, while P-02 never stops. Mean flow is 3.00 ± 0.10 L/min over 3 min, and the console shows mL/s and litres returned. Three passes in a row.</dd><dt>Retires</dt><dd>Control firmware and holding 3 L/min (team worries 1 and 3).</dd><dt>Estimate</dt><dd>half a day across two blocks (confidence: medium)</dd></dl></article>
+    <article class="ms"><header><span class="id">M5</span><h3>Case 2 flushes and stops itself, with a backup take</h3></header><div class="chips"><span class="chip crit">critical path</span><span class="chip">owner EF</span><span class="chip">Sat 15–22</span></div><dl><dt>Do</dt><dd>With the LSL-03 probe out of the water, run <code>TOUCHCAL EMPTY</code>. Run P-03 at d3 wet, then dry, and <code>SET i3dry</code> midway between the two currents. Then run Case 1 into Case 2 end to end.</dd><dt>Done when</dt><dd>Every pump stops ≤ 1.0 s after the probe leaves the water (FLUSH_EMPTY, source LSL-03, in the event log), with no more than a puddle left in TK-03. The only manual action is BV-01. Three full runs in a row; the third is filmed in full as the backup take (by Sat 22:00), however rough.</dd><dt>Retires</dt><dd>Detecting an empty flush tank at the source.</dd><dt>Estimate</dt><dd>4 h (confidence: low to medium)</dd></dl></article>
+    <article class="ms"><header><span class="id">M6</span><h3>Extras that earn points</h3></header><div class="chips"><span class="chip">off critical path</span><span class="chip">owner DC</span><span class="chip">Sat 19–24</span></div><dl><dt>Do</dt><dd>Fault demos (unplug FT-01, close BV-03, throttle BV-02); the FIC disturbance test; a <code>BURST</code> pulsation capture; a dye transit over a marked 1.00 m of tube.</dd><dt>Done when</dt><dd>Each fault demo produces the right diagnosis on the console, FIC restores 3.0 L/min after a BV-02 move, and the pulsation and dye plots are saved. None of this may delay M5's backup take.</dd><dt>Estimate</dt><dd>5 h (confidence: medium)</dd></dl></article>
+    <article class="ms"><header><span class="id">M7</span><h3>Video and submission uploaded</h3></header><div class="chips"><span class="chip crit">critical path</span><span class="chip">owner IV</span><span class="chip">Sun 08–18</span></div><dl><dt>Do</dt><dd>Three rehearsals; record the single take; shoot the edited segments; take annotated photos; finish the P&amp;ID; fill in the paper; share the code (repository or drive link in the submission, as the paper asks).</dd><dt>Done when</dt><dd>Uploaded by 16:00, two hours before the cutoff. A teammate who did not film checks the video against every requirement on pages 1–3 of the paper.</dd><dt>Estimate</dt><dd>one day (confidence: high)</dd></dl></article>
+  </div>
+  <h3>Run sheet</h3>
+  <div class="tablewrap">
+    <div class="runsheet" role="table" aria-label="Run sheet by lane and time block">
+      <div class="hd">Lane</div>
+      <div class="hd">Fri 08–10</div>
+      <div class="hd">Fri 10–14</div>
+      <div class="hd">Fri 14–19</div>
+      <div class="hd">Fri 19–24</div>
+      <div class="hd">Sat 08–13</div>
+      <div class="hd">Sat 13–19</div>
+      <div class="hd">Sat 19–24</div>
+      <div class="hd">Sun 08–13</div>
+      <div class="hd">Sun 13–18</div>
+      <div class="lane">HY · hydraulics</div>
+      <div>First steps: kit count against the fitting map; bore; drip tray and stands; dry layout</div>
+      <div><i class=m>M1</i> P-01 bucket tests with EF</div>
+      <div><i class=m>M2</i> build loop, tags, BV-02 dial</div>
+      <div><i class=m>M2</i> first water, leak test, fix</div>
+      <div><i class=m>M3</i> bucket and pour-back; BV-02 sweep moves</div>
+      <div><i class=m>M4</i> pour event · <i class=m>M5</i> resets between runs</div>
+      <div><i class=m>M5</i> backup take 22:00 · <i class=m>M6</i> dye transit</div>
+      <div><i class=m>M7</i> rehearsals; BV-01 hand</div>
+      <div>Photos; standby fixes</div>
+      <div class="lane">EF · electronics, firmware</div>
+      <div>First steps: flash over USB; PINS; solder the add-on board; power-off check</div>
+      <div><i class=m>M1</i> power-up, drivers, IS gains, FT-01 scope</div>
+      <div>Harness dressing; LSL-03 foil; LS-01 orientation</div>
+      <div><i class=m>M4</i> dry logic and interlock tests</div>
+      <div><i class=m>M3</i> console operator</div>
+      <div><i class=m>M4</i> acceptance · <i class=m>M5</i> TOUCHCAL, i3dry</div>
+      <div><i class=m>M5</i> backup take · <i class=m>M6</i> fault demos, FIC</div>
+      <div><i class=m>M7</i> runs the single take</div>
+      <div>Event logs and screenshots for the edit</div>
+      <div class="lane">DC · data, calibration</div>
+      <div>First steps: laptops ready; replay practice; weigh station</div>
+      <div><i class=m>M1</i> P-01 duty finder</div>
+      <div>LS-01 trip volume; duty map</div>
+      <div>Weigh-bucket setup; CAL dry run</div>
+      <div><i class=m>M3</i> workbench, fit, verify; Q2.1 and Q1.2 data</div>
+      <div>Valve and Q1.2 plots; Case logs → trend plots</div>
+      <div><i class=m>M6</i> burst and fault-demo analysis</div>
+      <div>Final numbers into the paper</div>
+      <div>Proofread the paper</div>
+      <div class="lane">IV · integration, video</div>
+      <div>First steps: organiser message; share the book; parts run; print</div>
+      <div>Parts to HY; photo log; owns the checklists</div>
+      <div>P&amp;ID v1 printed; shot list</div>
+      <div>Task 3 answers drafted</div>
+      <div>Answer-sheet tables</div>
+      <div>Film a Case 1 rehearsal; run script drills</div>
+      <div>Film the backup take; storyboard locked</div>
+      <div><i class=m>M7</i> record; voice-over</div>
+      <div><i class=m>M7</i> edit; upload by 16:00</div>
+    </div>
+  </div>
+  <div class="panel">
+    <h3>Checkpoints (IV calls each one)</h3>
+    <ul class="tight">
+        <li><strong>After M1 (Fri ≈ 14:00):</strong> P-01's flow through SOV-01 is known, so set d1. If even 100% gives under 3.0 L/min, raise TK-01 further, then set the loop target to P-01's maximum and document why. If current sensing is unusable, <code>SET isok 0</code> and the diagnostics fall back to flow only.</li>
+        <li><strong>After M2 (Fri night):</strong> no calibration on a weeping joint. A leak-free loop is the gate for M3.</li>
+        <li><strong>After M3 (Sat ≈ 13:00):</strong> R² and K are known and the Q1.2 and Q2.1 data exist. Freeze the FT-01 spool: anything that moves it means calibrating again.</li>
+        <li><strong>Sat 22:00 backup take:</strong> a complete single-go video exists, however rough. Sunday is for a better take, never for a first one.</li>
+        <li><strong>Sat 18:00 scope freeze:</strong> anything not passing drops down the descope ladder (sheet 10).</li>
+    </ul>
+    <p class="note">One rig and one scale: rig time is booked in the run sheet, and scale work (P-01 test, float trip volume, calibration) is batched.</p>
+  </div>
+</section>
+
+<section class="sheet" id="hydraulics">
+  <div class="sheet-head">
+    <p class="eyebrow">Sheet 03 · Hydraulic design</p>
+    <h2>P&amp;ID, line list and liquid inventory</h2>
+    <p class="lede">Every tank connection enters from the top through a dip tube, so nothing can drain through a failed fitting. FT-01 sits after the throttle valve and before the free discharge into TK-01: it never sees the pump's dead-head pressure.</p>
+  </div>
+  <figure>
+    <div class="figscroll"><svg class="diagram pid" viewBox="0 0 1280 780" role="img" aria-label="P&amp;ID: TK-01 feeds P-01 through SOV-01 and the equal tee into the sump TK-02; P-02 returns sump fluid through BV-02 and FT-01 to TK-01; the flush tank TK-03 joins at the tee through BV-01 and P-03." xmlns="http://www.w3.org/2000/svg">
+<rect x="70" y="175" width="180" height="125" class="liq"/>
+<path d="M70,120 V300 H250 V120" class="eq"/>
+<path d="M62,120 H78 M242,120 H258" class="eq"/>
+<text x="172" y="233.5" class="tb" text-anchor="middle">TK-01</text>
+<text x="172" y="250.5" class="ts" text-anchor="middle">Process tank · 10 L</text>
+<text x="172" y="265.5" class="ts" text-anchor="middle">on +0.3 m stand</text>
+<rect x="980" y="470" width="180" height="130" class="liq"/>
+<path d="M980,400 V600 H1160 V400" class="eq"/>
+<path d="M972,400 H988 M1152,400 H1168" class="eq"/>
+<text x="1070.0" y="531.0" class="tb" text-anchor="middle">TK-02</text>
+<text x="1070.0" y="548.0" class="ts" text-anchor="middle">Sump · 4.2 L</text>
+<rect x="70" y="520" width="160" height="130" class="liq"/>
+<path d="M70,480 V650 H230 V480" class="eq"/>
+<path d="M62,480 H78 M222,480 H238" class="eq"/>
+<text x="162" y="581.0" class="tb" text-anchor="middle">TK-03</text>
+<text x="162" y="598.0" class="ts" text-anchor="middle">Flush tank · 4.2 L</text>
+<text x="162" y="613.0" class="ts" text-anchor="middle">on +0.3 m stand</text>
+<path d="M88,290 L88,96 L40,96 L40,380 L164,380" class="ln"/>
+<path d="M196,380 L519,380" class="ln"/>
+<path d="M35,234 L40,246 L45,234 Z" class="fa"/>
+<path d="M94,375 L106,380 L94,385 Z" class="fa"/>
+<path d="M244,375 L256,380 L244,385 Z" class="fa"/>
+<text x="320" y="372" class="ts" text-anchor="middle">L-101 · 8×5 PU</text>
+<path d="M164,369 L180,380 L164,391 Z M196,369 L180,380 L196,391 Z" class="vlv"/>
+<path d="M180,380 V354" class="eq"/>
+<rect x="168" y="334" width="24" height="20" class="box"/>
+<text x="180" y="348.5" class="tb" text-anchor="middle">S</text>
+<text x="180" y="324" class="tb" text-anchor="middle">SOV-01</text>
+<text x="180" y="407" class="ts" text-anchor="middle">NC · fail-closed</text>
+<text x="200" y="344" class="io" text-anchor="start">G27</text>
+<circle cx="440" cy="380" r="5" class="dot"/>
+<text x="452" y="400" class="ts" text-anchor="start">TEE-01</text>
+<circle cx="545" cy="380" r="26" class="eq pumpfill"/>
+<path d="M537,369 L557,380 L537,391 Z" class="fa"/>
+<text x="545" y="425" class="tb" text-anchor="middle">P-01</text>
+<text x="545" y="441" class="ts" text-anchor="middle">diaphragm · d1</text>
+<circle cx="545" cy="318" r="19" class="bub"/>
+<path d="M526,318 H564" class="eq thin"/>
+<text x="545" y="314" class="tbub" text-anchor="middle">IT</text>
+<text x="545" y="331" class="tbub" text-anchor="middle">01</text>
+<text x="569" y="322" class="io" text-anchor="start">G15</text>
+<path d="M545,337 L545,354" class="sig"/>
+<path d="M571,380 L1030,380 L1030,445" class="ln"/>
+<path d="M794,375 L806,380 L794,385 Z" class="fa"/>
+<path d="M1025,419 L1030,431 L1035,419 Z" class="fa"/>
+<text x="800" y="372" class="ts" text-anchor="middle">L-102 · 8×5 PU</text>
+<path d="M1160,450 H1140" class="eq"/><circle cx="1133" cy="450" r="6" class="eq pumpfill"/>
+<path d="M1160,450 L1196,450" class="sig"/>
+<circle cx="1216" cy="450" r="19" class="bub"/>
+<path d="M1197,450 H1235" class="eq thin"/>
+<text x="1216" y="446" class="tbub" text-anchor="middle">LSH</text>
+<text x="1216" y="463" class="tbub" text-anchor="middle">01</text>
+<text x="1216" y="483" class="io" text-anchor="middle">G35</text>
+<text x="1216" y="500" class="ts" text-anchor="middle">open = high</text>
+<text x="1216" y="514" class="ts" text-anchor="middle">fail-safe</text>
+<path d="M1120,588 L1120,250 L1076,250" class="ln"/>
+<path d="M1115,336 L1120,324 L1125,336 Z" class="fa"/>
+<path d="M1044,239 L1060,250 L1044,261 Z M1076,239 L1060,250 L1076,261 Z" class="vlv"/>
+<path d="M1060,250 V232 M1050,232 H1070" class="eq"/>
+<text x="1060" y="224" class="tb" text-anchor="middle">BV-03</text>
+<text x="1060" y="277" class="ts" text-anchor="middle">NO · isolation</text>
+<path d="M1044,250 L976,250" class="ln"/>
+<path d="M1016,245 L1004,250 L1016,255 Z" class="fa"/>
+<circle cx="950" cy="250" r="26" class="eq pumpfill"/>
+<path d="M958,239 L938,250 L958,261 Z" class="fa"/>
+<text x="950" y="295" class="tb" text-anchor="middle">P-02</text>
+<text x="950" y="311" class="ts" text-anchor="middle">diaphragm · d2 = 100%</text>
+<circle cx="950" cy="186" r="19" class="bub"/>
+<path d="M931,186 H969" class="eq thin"/>
+<text x="950" y="182" class="tbub" text-anchor="middle">IT</text>
+<text x="950" y="199" class="tbub" text-anchor="middle">02</text>
+<text x="974" y="190" class="io" text-anchor="start">G36</text>
+<path d="M950,205 L950,224" class="sig"/>
+<path d="M924,250 L836,250" class="ln"/>
+<path d="M886,245 L874,250 L886,255 Z" class="fa"/>
+<path d="M804,239 L820,250 L804,261 Z M836,239 L820,250 L836,261 Z" class="vlv"/>
+<path d="M820,250 V232 M810,232 H830" class="eq"/>
+<text x="820" y="224" class="tb" text-anchor="middle">BV-02</text>
+<text x="820" y="277" class="ts" text-anchor="middle">throttle · 0–90° dial</text>
+<path d="M804,250 L716,250" class="ln"/>
+<path d="M766,245 L754,250 L766,255 Z" class="fa"/>
+<rect x="644" y="238" width="72" height="24" rx="3" class="box"/>
+<circle cx="680" cy="250" r="7" class="eq thin"/><path d="M673,250 H687 M680,243 V257" class="eq thin"/>
+<path d="M680,238 L680,214" class="eq"/>
+<circle cx="680" cy="194" r="19" class="bub"/>
+<path d="M661,194 H699" class="eq thin"/>
+<text x="680" y="190" class="tbub" text-anchor="middle">FT</text>
+<text x="680" y="207" class="tbub" text-anchor="middle">01</text>
+<text x="704" y="198" class="io" text-anchor="start">G14 · ISR</text>
+<text x="680" y="280" class="ts" text-anchor="middle">≥10D in · ≥5D out</text>
+<path d="M644,250 L330,250 L330,60 L200,60 L200,140" class="ln"/>
+<path d="M486,245 L474,250 L486,255 Z" class="fa"/>
+<path d="M325,156 L330,144 L335,156 Z" class="fa"/>
+<path d="M271,55 L259,60 L271,65 Z" class="fa"/>
+<path d="M195,104 L200,116 L205,104 Z" class="fa"/>
+<text x="480" y="242" class="ts" text-anchor="middle">L-202 return · 8×5 PU</text>
+<text x="265" y="52" class="ts" text-anchor="middle">free discharge above liquid</text>
+<path d="M88,640 L88,460 L264,460" class="ln"/>
+<path d="M83,566 L88,554 L93,566 Z" class="fa"/>
+<path d="M264,449 L280,460 L264,471 Z M296,449 L280,460 L296,471 Z" class="vlv"/>
+<path d="M280,460 V442 M270,442 H290" class="eq"/>
+<text x="280" y="434" class="tb" text-anchor="middle"></text>
+<text x="280" y="492" class="tb" text-anchor="middle">BV-01</text>
+<text x="280" y="508" class="ts" text-anchor="middle">manual</text>
+<circle cx="280" cy="400" r="19" class="bub"/>
+<path d="M261,400 H299" class="eq thin"/>
+<text x="280" y="396" class="tbub" text-anchor="middle">ZSO</text>
+<text x="280" y="413" class="tbub" text-anchor="middle">01</text>
+<text x="256" y="404" class="io" text-anchor="end">G5</text>
+<path d="M280,419 L280,442" class="sig"/>
+<path d="M296,460 L354,460" class="ln"/>
+<circle cx="380" cy="460" r="26" class="eq pumpfill"/>
+<path d="M372,449 L392,460 L372,471 Z" class="fa"/>
+<text x="380" y="505" class="tb" text-anchor="middle">P-03</text>
+<text x="380" y="521" class="ts" text-anchor="middle">diaphragm · d3</text>
+<circle cx="380" cy="398" r="19" class="bub"/>
+<path d="M361,398 H399" class="eq thin"/>
+<text x="380" y="394" class="tbub" text-anchor="middle">IT</text>
+<text x="380" y="411" class="tbub" text-anchor="middle">03</text>
+<text x="356" y="402" class="io" text-anchor="end">G39</text>
+<path d="M380,417 L380,434" class="sig"/>
+<path d="M406,460 L440,460 L440,385" class="ln"/>
+<path d="M435,431 L440,419 L445,431 Z" class="fa"/>
+<text x="468" y="470" class="ts" text-anchor="start">L-301</text>
+<circle cx="96" cy="634" r="4" class="probe"/>
+<path d="M100,634 L262,634" class="sig"/>
+<circle cx="282" cy="634" r="19" class="bub"/>
+<path d="M263,634 H301" class="eq thin"/>
+<text x="282" y="630" class="tbub" text-anchor="middle">LSL</text>
+<text x="282" y="647" class="tbub" text-anchor="middle">03</text>
+<text x="282" y="667" class="io" text-anchor="middle">T0 · G4</text>
+<text x="282" y="682" class="ts" text-anchor="middle">probe at dip-tube inlet</text>
+<rect x="380" y="548" width="440" height="200" rx="6" class="box"/>
+<text x="600" y="572" class="tb" text-anchor="middle">UC-01 · ESP32 NodeMCU-32S (basic process control)</text>
+<text x="396" y="596" class="io" text-anchor="start">FQI-01</text>
+<text x="460" y="596" class="t" text-anchor="start">Q = a·f + b, mL/s and L/min, totalised litres</text>
+<text x="396" y="615" class="io" text-anchor="start">UY-01</text>
+<text x="460" y="615" class="t" text-anchor="start">sequence: Case 1 → Case 2 → safe OFF</text>
+<text x="396" y="634" class="io" text-anchor="start">FIC-01</text>
+<text x="460" y="634" class="t" text-anchor="start">P-02 flow PI loop (optional mode)</text>
+<text x="396" y="653" class="io" text-anchor="start">I-1</text>
+<text x="460" y="653" class="t" text-anchor="start">LSH-01 high: stop P-01 + P-03, close SOV-01</text>
+<text x="396" y="672" class="io" text-anchor="start">I-2</text>
+<text x="460" y="672" class="t" text-anchor="start">P-03 only into running P-01, SOV-01 closed</text>
+<text x="396" y="691" class="io" text-anchor="start">I-3</text>
+<text x="460" y="691" class="t" text-anchor="start">SOV-01 held closed while P-03 runs</text>
+<text x="396" y="710" class="io" text-anchor="start">I-4</text>
+<text x="460" y="710" class="t" text-anchor="start">P-02 trip: dry run or blocked discharge</text>
+<text x="396" y="729" class="io" text-anchor="start">HS-01</text>
+<text x="460" y="729" class="t" text-anchor="start">start / stop switch on G34</text>
+<text x="850" y="636" class="tb" text-anchor="start">NOTES</text>
+<text x="850" y="655" class="t" text-anchor="start">1  Dip tubes enter from the top; only LS-01 pierces a wall.</text>
+<text x="850" y="674" class="t" text-anchor="start">2  FT-01 after BV-02: never sees the 8.25 bar cut-off.</text>
+<text x="850" y="693" class="t" text-anchor="start">   (FT-01 rated 0.8 MPa)</text>
+<text x="850" y="712" class="t" text-anchor="start">3  TK-01, TK-03 raised ~0.3 m: flooded pump suction.</text>
+<text x="850" y="731" class="t" text-anchor="start">4  8×5 PU lines; 10×8 PU stubs at pump ports.</text>
+<text x="850" y="750" class="t" text-anchor="start">5  BV-02 is the throttling (needle) valve: the kit has none.</text>
+<path d="M40,712 L90,712" class="ln"/>
+<text x="98" y="716" class="t" text-anchor="start">process line, arrow = flow</text>
+<path d="M40,736 L90,736" class="sig"/>
+<text x="98" y="740" class="t" text-anchor="start">electrical signal</text>
+<text x="40" y="762" class="io" text-anchor="start">G14 = ESP32 GPIO wired to that instrument</text>
+</svg></div>
+    <figcaption>Figure 1. P&amp;ID (ISA-5.1-2024 symbols, simplified). Process lines are drawn in the accent colour with flow arrows, electrical signals dashed. The blue labels give the ESP32 GPIO that reads or drives each device. Tags match the physical labels on the rig.</figcaption>
+  </figure>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Line</th><th>Route</th><th>Tube</th><th>In line</th><th>Build note</th></tr></thead>
+      <tbody>
+        <tr><td>L-101</td><td>TK-01 dip tube → SOV-01 → TEE-01 → P-01 suction</td><td>8×5 PU; 10×8 stub at the pump</td><td>SOV-01, TEE-01</td><td>Keep it under 1 m with no kinks: this is the suction-limited line.</td></tr>
+        <tr><td>L-102</td><td>P-01 discharge → TK-02 top</td><td>8×5 PU</td><td>–</td><td>Aim the outlet at the wall opposite LS-01.</td></tr>
+        <tr><td>L-201</td><td>TK-02 dip tube → BV-03 → P-02 suction</td><td>8×5 PU; 10×8 stub</td><td>BV-03</td><td>Dip tube ends 1 cm above the floor.</td></tr>
+        <tr><td>L-202</td><td>P-02 → BV-02 → FT-01 → TK-01 top</td><td>8×5 PU</td><td>BV-02, FT-01</td><td>FT-01 at the low point; ≥ 5 cm straight before it, ≥ 2.5 cm after.</td></tr>
+        <tr><td>L-301</td><td>TK-03 dip tube → BV-01 → P-03 → TEE-01</td><td>8×5 PU; 10×8 stub</td><td>BV-01, LSL-03 probe</td><td>Tape the LSL-03 probe 2–3 mm above the dip-tube inlet. Put the tee right at the SOV-01 outlet, so the dead leg is short.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="grid2">
+    <div class="panel">
+      <h3>Layout and elevations</h3>
+      <ul class="tight">
+        <li>TK-01 and TK-03 sit about 0.3 m above the pump inlets on stools or boxes, which gives flooded suction for P-01 and P-03. TK-02 and the pumps sit on the bench.</li>
+        <li>Put the pumps and the PCB in a plastic tray as a drip tray, with the PCB on a raised board. Run the mains cord and SMPS at the far, dry end.</li>
+        <li>Mount FT-01 horizontally at the lowest point of L-202, arrow along the flow. Give it ≥ 5 cm of straight tube before and ≥ 2.5 cm after. The return then rises to TK-01, so the meter stays full.</li>
+        <li>Aim the P-01 discharge at the TK-02 wall opposite LS-01, so the float does not chatter on waves.</li>
+        <li>Clip each dip tube to the tank rim and weight its end (a nut on a zip tie). P-02's tube ends 1 cm above the floor; P-03's tube ends on the floor, cut at 45°.</li>
+        <li>Fix the BV-02 protractor dial (0–90°, marked 25/50/70/75/100%) under the handle before the valve tests.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3>Joints that do not leak</h3>
+      <ul class="tight">
+        <li>Cut tube square with a sharp blade. Push it in fully to the internal stop, then pull to confirm it is locked.</li>
+        <li>PTFE tape goes only on male threads: 3 wraps, clockwise viewed from the thread end, starting one thread back. Never on push-fits.</li>
+        <li>Pump barbs take a short 10 × 8 blue stub with two zip ties as a clamp, then a 10→8 reducer.</li>
+        <li>Leak test: 10 min at 3 L/min, then 2 min with BV-02 at 25%. Wrap each joint in dry tissue; any wet spot fails it.</li>
+      </ul>
+    </div>
+  </div>
+  <h3>Fitting map against the exact kit counts</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Joint</th><th>Parts</th><th>Qty</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>SOV-01 inlet and outlet</td><td>PU male connector ¼" × 8 mm</td><td>2</td><td>PTFE on the threads; the body arrow points away from TK-01</td></tr>
+        <tr><td>BV-01, BV-02, BV-03</td><td>PU male connector ¼" × 8 mm</td><td>6</td><td>Uses 8 of the kit's 8 male connectors, so order 4 spares tonight</td></tr>
+        <tr><td>Pump ports P-01, P-02, P-03</td><td>10×8 blue stub (about 15 cm) + PU unequal union 10→8</td><td>6 + 6</td><td>Barbed ports: two zip ties per barb. Threaded ¼" ports: brass hose nipple with a washer, then the stub</td></tr>
+        <tr><td>TEE-01</td><td>PU equal tee 8 mm</td><td>1</td><td>Directly at the SOV-01 outlet</td></tr>
+        <tr><td>FT-01 (7 mm barbs, 4 mm bore)</td><td>8×5 PU, end softened 60 s in about 80 °C water, pushed fully on</td><td>2 ends</td><td>Two zip ties each end. The 8 mm-ID blue tube is too loose; do not use it here</td></tr>
+        <tr><td>Tank connections</td><td>None: dip tubes over the rim</td><td>0</td><td>No drilling. Brass hose nipples (5) and washers (10) stay spare</td></tr>
+        <tr><td>Tube joins and repairs</td><td>PU equal union 8 mm</td><td>0–2 of 5</td><td>Spares</td></tr>
+        <tr><td>8×5 PU tube</td><td>L-101 1.2 m · L-102 1.0 · L-201 0.9 · L-202 1.6 · L-301 1.0 + dip tubes</td><td>≈ 6 m of 9</td><td>Cut square; keep 3 m spare for remakes</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="panel">
+    <h3>First water, in this order</h3>
+    <ol class="tight">
+      <li>Fill by weight (1 kg = 1 L): TK-01 3.4 L, TK-02 2.3 L (below the LS-01 trip), TK-03 4.2 L. BV-01 shut, BV-02 fully open, BV-03 open.</li>
+      <li>Console <code>MANUAL</code>, then <code>P 2 40</code>: water goes sump → P-02 → FT-01 → TK-01. Tap the FT-01 spool until no bubbles pass and the flow reading settles. Then <code>P 2 0</code>.</li>
+      <li><code>SOV 1</code>, then <code>P 1 40</code>: TK-01 → SOV-01 → P-01 → sump. Stop at about 2.3 L. Then <code>P 1 0</code>, <code>SOV 0</code>.</li>
+      <li>Open BV-01, then <code>ILK 0</code>, <code>P 1 40</code>, <code>P 3 30</code>: flush water reaches the tee and the sump. Then <code>P 3 0</code>, <code>P 1 0</code>, <code>ILK 1</code>. Shut BV-01 and refill TK-03 to 4.2 L.</li>
+      <li>Check each pump moves water from IN to OUT, then wrap every joint in dry tissue and run the M2 leak test.</li>
+      <li>Measure the LS-01 trip volume: pour water from a weighed jug into TK-02 until <code>lsh</code> turns 1 on the console.</li>
+    </ol>
+  </div>
+  <div class="tool" id="inventory">
+    <header><h3>Inventory planner</h3><span class="note">How much water goes where, so nothing overflows and no dip tube sucks air.</span></header>
+    <div class="fields">
+      <div class="field"><label for="inv-tk1">TK-01 start (L)</label><input type="number" id="inv-tk1" step="0.1" value="3.4"></div>
+      <div class="field"><label for="inv-s0">Sump start (L)</label><input type="number" id="inv-s0" step="0.1" value="2.3"></div>
+      <div class="field"><label for="inv-trip">Sump at LS-01 trip (L)</label><input type="number" id="inv-trip" step="0.1" value="2.5"></div>
+      <div class="field"><label for="inv-pour">External pour (L)</label><input type="number" id="inv-pour" step="0.1" value="0.8"></div>
+      <div class="field"><label for="inv-flush">Flush tank (L)</label><input type="number" id="inv-flush" step="0.1" value="4.2"></div>
+      <div class="field"><label for="inv-lines">Lines hold (L)</label><input type="number" id="inv-lines" step="0.05" value="0.25"></div>
+      <div class="field"><label for="inv-min">TK-01 minimum (L)</label><input type="number" id="inv-min" step="0.1" value="1.5"></div>
+      <div class="field"><label for="inv-brim">TK-01 brim (L)</label><input type="number" id="inv-brim" step="0.1" value="10.5"></div>
+    </div>
+    <div class="out" id="inv-out"></div>
+    <p class="note">Measure the trip volume once: fill TK-02 on the scale until LS-01 changes state (1 kg = 1 L). Start the sump about 0.2 L below the trip. P-01 only out-pumps P-02 by about 10%, so the level barely moves before the pour, and a low start means the pour never reaches the float. The simulator caught this.</p>
+  </div>
+</section>
+
+<section class="sheet" id="electrical">
+  <div class="sheet-head">
+    <p class="eyebrow">Sheet 04 · Electrical design</p>
+    <h2>Power path, I/O list and the add-on board</h2>
+    <p class="lede">The PCB stays as supplied. Three unrouted ESP32 socket pins carry pump current, one carries the LSL-03 probe, and IBT-2 logic moves to 3.3 V. All of it is soldered on the underside of the socket or on a perfboard.</p>
+  </div>
+  <figure>
+    <div class="figscroll"><svg class="diagram power" viewBox="0 0 1180 430" role="img" aria-label="Power distribution: mains reaches only the SMPS; 12 V enters the PCB through fuse F3 and the TVS, feeds P1-P3 to the three IBT-2 drivers and P4 to the D4184 valve driver; the LM2596 makes 5 V." xmlns="http://www.w3.org/2000/svg">
+<rect x="20" y="30" width="150" height="52" rx="5" class="box hot"/>
+<text x="95.0" y="50.0" class="tb" text-anchor="middle">230 V AC mains</text>
+<text x="95.0" y="68.0" class="ts" text-anchor="middle">3-core cord, PE bonded</text>
+<rect x="20" y="150" width="150" height="64" rx="5" class="box"/>
+<text x="95.0" y="176.0" class="tb" text-anchor="middle">SMPS</text>
+<text x="95.0" y="194.0" class="ts" text-anchor="middle">12 V · 29 A</text>
+<path d="M95,82 L95,150" class="pw"/>
+<path d="M90,138 L95,150 L100,138 Z" class="pa"/>
+<text x="103" y="120" class="ts" text-anchor="start">L · N · PE only here</text>
+<rect x="280" y="140" width="240" height="84" rx="5" class="box"/>
+<text x="400.0" y="176.0" class="tb" text-anchor="middle">PCB 12V INPUT</text>
+<text x="400.0" y="194.0" class="ts" text-anchor="middle">fuse F3 ≥ 15 A · TVS · 1000 µF</text>
+<path d="M170,182 L280,182" class="pw"/>
+<path d="M268,177 L280,182 L268,187 Z" class="pa"/>
+<text x="225" y="174" class="ts" text-anchor="middle">16 AWG red/black</text>
+<rect x="580" y="30" width="150" height="52" rx="5" class="box"/>
+<text x="655.0" y="50.0" class="tb" text-anchor="middle">P1 · P2 · P3</text>
+<text x="655.0" y="68.0" class="ts" text-anchor="middle">12 V + 470 µF each</text>
+<rect x="580" y="160" width="150" height="52" rx="5" class="box"/>
+<text x="655.0" y="180.0" class="tb" text-anchor="middle">P4 / P5</text>
+<text x="655.0" y="198.0" class="ts" text-anchor="middle">12 V aux</text>
+<rect x="580" y="290" width="150" height="52" rx="5" class="box"/>
+<text x="655.0" y="310.0" class="tb" text-anchor="middle">LM2596 buck</text>
+<text x="655.0" y="328.0" class="ts" text-anchor="middle">5 V rail (VCC)</text>
+<path d="M520,160 L550,160 L550,56 L580,56" class="pw"/>
+<path d="M568,51 L580,56 L568,61 Z" class="pa"/>
+<path d="M520,186 L580,186" class="pw"/>
+<path d="M568,181 L580,186 L568,191 Z" class="pa"/>
+<path d="M520,210 L550,210 L550,316 L580,316" class="pw"/>
+<path d="M568,311 L580,316 L568,321 Z" class="pa"/>
+<rect x="790" y="20" width="170" height="72" rx="5" class="box"/>
+<text x="875.0" y="50.0" class="tb" text-anchor="middle">IBT-2 × 3</text>
+<text x="875.0" y="68.0" class="ts" text-anchor="middle">B+/B− 18 AWG from P1–P3</text>
+<path d="M730,56 L790,56" class="pw"/>
+<path d="M778,51 L790,56 L778,61 Z" class="pa"/>
+<rect x="1010" y="20" width="160" height="72" rx="5" class="box"/>
+<text x="1090.0" y="50.0" class="tb" text-anchor="middle">P-01 · P-02 · P-03</text>
+<text x="1090.0" y="68.0" class="ts" text-anchor="middle">M+/M− · 2.5–3.5 A each</text>
+<path d="M960,56 L1010,56" class="pw"/>
+<path d="M998,51 L1010,56 L998,61 Z" class="pa"/>
+<rect x="790" y="150" width="170" height="72" rx="5" class="box"/>
+<text x="875.0" y="180.0" class="tb" text-anchor="middle">D4184 MOSFET</text>
+<text x="875.0" y="198.0" class="ts" text-anchor="middle">flyback diode on coil</text>
+<path d="M730,186 L790,186" class="pw"/>
+<path d="M778,181 L790,186 L778,191 Z" class="pa"/>
+<rect x="1010" y="150" width="160" height="72" rx="5" class="box"/>
+<text x="1090.0" y="180.0" class="tb" text-anchor="middle">SOV-01 coil</text>
+<text x="1090.0" y="198.0" class="ts" text-anchor="middle">12 V, normally closed</text>
+<path d="M960,186 L1010,186" class="pw"/>
+<path d="M998,181 L1010,186 L998,191 Z" class="pa"/>
+<rect x="790" y="280" width="170" height="72" rx="5" class="box"/>
+<text x="875.0" y="310.0" class="tb" text-anchor="middle">ESP32 5V pin</text>
+<text x="875.0" y="328.0" class="ts" text-anchor="middle">on-board 3.3 V LDO</text>
+<path d="M730,316 L790,316" class="pw"/>
+<path d="M778,311 L790,316 L778,321 Z" class="pa"/>
+<rect x="1010" y="280" width="160" height="72" rx="5" class="box"/>
+<text x="1090.0" y="310.0" class="tb" text-anchor="middle">FT-01 red wire</text>
+<text x="1090.0" y="328.0" class="ts" text-anchor="middle">YF-S401 5 V supply</text>
+<path d="M960,316 L1010,316" class="pw"/>
+<path d="M998,311 L1010,316 L998,321 Z" class="pa"/>
+<text x="875" y="372" class="io" text-anchor="middle">3V3 → IBT-2 VCC (logic) ×3</text>
+<text x="590" y="410" class="t" text-anchor="middle">Starts are staggered ≥ 500 ms and ramped, so three pumps never draw inrush at once.</text>
+</svg></div>
+    <figcaption>Figure 2. Power distribution. Mains reaches only the SMPS. All 12 V loads go through fuse F3. Check the fuse value before power-up: Case 2 runs three pumps (≈ 11 A) through it.</figcaption>
+  </figure>
+  <figure>
+    <div class="figscroll"><svg class="diagram cond" viewBox="0 0 1180 300" role="img" aria-label="Signal conditioning on the add-on board: the BTS7960 current-mirror output is loaded to about 2 kilo-ohms and fed through 10 kilo-ohms with 100 nF to an ADC pin; the flow sensor's 5 V pulse is divided to 3.3 V before G14." xmlns="http://www.w3.org/2000/svg">
+<text x="20" y="26" class="tb" text-anchor="start">IS current sense (one per pump)</text>
+<rect x="20" y="60" width="130" height="70" rx="5" class="box"/>
+<text x="85" y="90" class="tb" text-anchor="middle">IBT-2</text>
+<text x="85" y="107" class="ts" text-anchor="middle">R_IS + L_IS tied</text>
+<path d="M150,95 L260,95" class="wire"/>
+<circle cx="200" cy="95" r="3.5" class="dot"/>
+<path d="M200,95 L200,150" class="wire"/>
+<rect x="190" y="150" width="20" height="44" class="res"/>
+<path d="M200,194 L200,230" class="wire"/>
+<path d="M188,230 H212 M192,236 H208 M196,242 H204" class="wire"/>
+<text x="218" y="172" class="ts" text-anchor="start">3.3 kΩ ∥ on-board 5 kΩ</text>
+<text x="218" y="188" class="io" text-anchor="start">≈ 2.0 kΩ → 0.24 V/A</text>
+<rect x="260" y="85" width="56" height="20" class="res"/>
+<text x="288" y="75" class="ts" text-anchor="middle">10 kΩ</text>
+<path d="M316,95 L470,95" class="wire"/>
+<circle cx="430" cy="95" r="3.5" class="dot"/>
+<path d="M430,95 L430,140" class="wire"/>
+<path d="M416,140 H444 M416,148 H444" class="wire"/>
+<path d="M430,148 L430,178" class="wire"/>
+<path d="M418,178 H442 M422,184 H438 M426,190 H434" class="wire"/>
+<text x="452" y="148" class="ts" text-anchor="start">100 nF</text>
+<rect x="470" y="70" width="150" height="50" rx="5" class="box"/>
+<text x="545" y="92" class="io" text-anchor="middle">G15 · G36 · G39</text>
+<text x="545" y="108" class="ts" text-anchor="middle">ADC, 2.5 dB atten.</text>
+<text x="20" y="268" class="t" text-anchor="start">Fault current (≈4.5 mA) into 2 kΩ stays ≤ 9 V; 10 kΩ keeps pin injection &lt; 0.6 mA.</text>
+<text x="20" y="288" class="t" text-anchor="start">10 kΩ + 100 nF (160 Hz) averages the 20 kHz PWM: reading = supply current.</text>
+<text x="660" y="26" class="tb" text-anchor="start">FT-01 pulse level shift</text>
+<rect x="660" y="60" width="140" height="70" rx="5" class="box"/>
+<text x="730" y="90" class="tb" text-anchor="middle">YF-S401</text>
+<text x="730" y="107" class="ts" text-anchor="middle">yellow: 0 / &gt;4.5 V</text>
+<path d="M800,95 L850,95" class="wire"/>
+<rect x="850" y="85" width="56" height="20" class="res"/>
+<text x="878" y="75" class="ts" text-anchor="middle">R1</text>
+<path d="M906,95 L1020,95" class="wire"/>
+<circle cx="960" cy="95" r="3.5" class="dot"/>
+<path d="M960,95 L960,140" class="wire"/>
+<rect x="950" y="140" width="20" height="44" class="res"/>
+<text x="978" y="166" class="ts" text-anchor="start">R2</text>
+<path d="M960,184 L960,210" class="wire"/>
+<path d="M948,210 H972 M952,216 H968 M956,222 H964" class="wire"/>
+<rect x="1020" y="70" width="140" height="50" rx="5" class="box"/>
+<text x="1090" y="92" class="io" text-anchor="middle">FLOW_SENSOR S</text>
+<text x="1090" y="108" class="ts" text-anchor="middle">→ G14 interrupt</text>
+<text x="910" y="240" class="t" text-anchor="middle">push-pull output: R1 10 kΩ, R2 20 kΩ → 3.33 V</text>
+<text x="910" y="258" class="t" text-anchor="middle">internal 10 kΩ pull-up: R1 0 Ω, R2 22 kΩ → 3.44 V</text>
+</svg></div>
+    <figcaption>Figure 3. Signal conditioning on the add-on board. Measure the IS-to-GND resistance on each IBT-2 first. If it is not 10 kΩ per pin, choose the added resistor so the total is about 2 kΩ. Scope the FT-01 output before picking R1 and R2.</figcaption>
+  </figure>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>ESP32 pin</th><th>PCB net · connector</th><th>Device</th><th>Type</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td><code>G33</code></td><td>R_PWM1 · U2-6</td><td>IBT-2 #1 RPWM (P-01)</td><td>PWM out, 20 kHz</td><td></td></tr>
+        <tr><td><code>G32</code></td><td>L_PWM1 · U2-5</td><td>IBT-2 #1 LPWM</td><td>out, held LOW</td><td>one direction only</td></tr>
+        <tr><td><code>G26 · G13</code></td><td>R_EN1 · L_EN1 · U2-4/3</td><td>IBT-2 #1 enables</td><td>out</td><td>LOW 300 ms after stop</td></tr>
+        <tr><td><code>G19</code></td><td>R_PWM2 · U3-6</td><td>IBT-2 #2 RPWM (P-02)</td><td>PWM out</td><td></td></tr>
+        <tr><td><code>G18</code></td><td>L_PWM2 · U3-5</td><td>IBT-2 #2 LPWM</td><td>out, held LOW</td><td></td></tr>
+        <tr><td><code>G17 · G16</code></td><td>R_EN2 · L_EN2 · U3-4/3</td><td>IBT-2 #2 enables</td><td>out</td><td></td></tr>
+        <tr><td><code>G25</code></td><td>R_PWM3 · U4-6</td><td>IBT-2 #3 RPWM (P-03)</td><td>PWM out</td><td></td></tr>
+        <tr><td><code>G23</code></td><td>L_PWM3 · U4-5</td><td>IBT-2 #3 LPWM</td><td>out, held LOW</td><td></td></tr>
+        <tr><td><code>G22 · G21</code></td><td>R_EN3 · L_EN3 · U4-4/3</td><td>IBT-2 #3 enables</td><td>out</td><td></td></tr>
+        <tr><td><code>G27</code></td><td>SV · SOLENOID_VALVE-1</td><td>D4184 signal → SOV-01</td><td>out</td><td>HIGH = open</td></tr>
+        <tr><td><code>G14</code></td><td>FS · FLOW_SENSOR-1</td><td>FT-01 yellow, through R1/R2</td><td>in, interrupt</td><td>VCC pin = 5 V to the red wire</td></tr>
+        <tr><td><code>G35</code></td><td>FSW · FLOAT_SWITCH-1</td><td>LS-01 float</td><td>in, PCB 10 kΩ pull-up + 100 nF</td><td>check against G34</td></tr>
+        <tr><td><code>G34</code></td><td>SW · ON/OFF_SWITCH-1</td><td>HS-01 tactile switch</td><td>in, PCB pull-up</td><td>LOW = pressed</td></tr>
+        <tr><td><code>G36</code></td><td>unrouted · socket pin 3</td><td>IS from IBT-2 #2</td><td>ADC1</td><td>add-on</td></tr>
+        <tr><td><code>G39</code></td><td>unrouted · socket pin 4</td><td>IS from IBT-2 #3</td><td>ADC1</td><td>add-on</td></tr>
+        <tr><td><code>G15</code></td><td>unrouted · socket pin 23</td><td>IS from IBT-2 #1</td><td>ADC2, Wi-Fi off</td><td>add-on</td></tr>
+        <tr><td><code>G4</code></td><td>unrouted · socket pin 26</td><td>LSL-03 probe at the TK-03 dip-tube inlet</td><td>touch T0</td><td>add-on; probe GND wire beside it</td></tr>
+        <tr><td><code>G5</code></td><td>unrouted · socket pin 29</td><td>ZSO-01 contact on BV-01</td><td>in, internal pull-up</td><td>optional</td></tr>
+        <tr><td><code>G2</code></td><td>on-board LED</td><td>status LED</td><td>out</td><td>fast blink = open BV-01</td></tr>
+        <tr><td><code>3V3</code></td><td>socket pin 1</td><td>IBT-2 VCC × 3</td><td>power</td><td>moved from 5 V</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="grid2">
+    <div class="panel">
+      <h3>Harness, in build order</h3>
+      <ol class="tight">
+        <li>Continuity map before power: each ESP32 socket pin to its connector pin. Confirm whether SW and FSW are G34 and G35 or swapped.</li>
+        <li>Driver harness from U2/U3/U4 to the IBT-2s: GND, L_EN, R_EN, LPWM, RPWM. Leave U-header pin 1 (5 V) unconnected and feed IBT-2 VCC from 3V3.</li>
+        <li>On each IBT-2, tie R_IS to L_IS and add 3.3 kΩ to GND. Run a twisted pair (IS plus GND) to the add-on board.</li>
+        <li>Solder G36, G39, G15, G4 and G5 to the underside of the socket pins (socket pins 3, 4, 23, 26, 29). Mark them with sleeves.</li>
+        <li>Put a flyback diode (1N4007 or 1N5819) across the SOV coil: band to +12 V.</li>
+        <li>Mount LS-01 so that contact OPEN = level HIGH. A broken wire then also reads high and stops P-01.</li>
+        <li>Make the LSL-03 probe from two bare tinned wires 5 mm apart, one to G4 and one to GND. Tape them along the TK-03 dip tube so 5 mm of bare wire ends 2–3 mm above the inlet. Twist the lead and keep it away from the motor wires.</li>
+      </ol>
+    </div>
+    <div class="panel">
+      <h3>Electrical safety, non-negotiable</h3>
+      <ul class="tight">
+        <li>Bond the SMPS PE terminal and close its terminal cover. Have a qualified person check the mains side, as the kit sheet requires.</li>
+        <li>Power-off checklist (sheet 08) before every first power-up. Check polarity at the PCB input with the DMM.</li>
+        <li>Keep pump wiring (16/18 AWG) apart from signal wiring. Twist the FT-01 lead and route it away from the motor leads.</li>
+        <li>Never hot-plug the motor leads. Never run a pump against a closed valve; I-1 to I-4 back this up in firmware.</li>
+        <li>Power-up order: 12 V on, ESP32 boots with every driver input LOW, then USB console. The firmware drives all driver pins LOW in its first statement.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="sheet" id="control">
+  <div class="sheet-head">
+    <p class="eyebrow">Sheet 05 · Control design</p>
+    <h2>Sequence, interlocks and fault diagnosis</h2>
+    <p class="lede">The firmware is laid out like a PLC scan: read inputs, run the sequence, apply interlocks, write outputs, every 10 ms. Telemetry goes out at 10 Hz over USB. It compiles with zero warnings on Arduino-ESP32 core 2.0.17 and 3.1.3.</p>
+  </div>
+  <figure>
+    <div class="figscroll"><svg class="diagram states" viewBox="0 0 1240 470" role="img" aria-label="Sequence state machine: one switch press runs Case 1, then Case 2, then a latched safe OFF; LS-01 high sends each case into a hold state; the switch stops everything from any state." xmlns="http://www.w3.org/2000/svg">
+<rect x="20" y="40" width="140" height="58" rx="10" class="st"/>
+<text x="90.0" y="64" class="tb" text-anchor="middle">IDLE</text>
+<text x="90.0" y="82" class="ts" text-anchor="middle">all off, SOV closed</text>
+<rect x="220" y="40" width="160" height="58" rx="10" class="st"/>
+<text x="300.0" y="64" class="tb" text-anchor="middle">C1_START</text>
+<text x="300.0" y="82" class="ts" text-anchor="middle">zero currents 0.6 s</text>
+<rect x="450" y="40" width="180" height="58" rx="10" class="st"/>
+<text x="540.0" y="64" class="tb" text-anchor="middle">C1_RUN</text>
+<text x="540.0" y="82" class="ts" text-anchor="middle">P-02 d2 · P-01 d1</text>
+<rect x="800" y="40" width="200" height="58" rx="10" class="st"/>
+<text x="900.0" y="64" class="tb" text-anchor="middle">C1_HOLD_LSH</text>
+<text x="900.0" y="82" class="ts" text-anchor="middle">P-01 off, SOV closed</text>
+<path d="M160,69 L220,69" class="tr"/>
+<path d="M208,64 L220,69 L208,74 Z" class="ta"/>
+<text x="190" y="61" class="ts" text-anchor="middle">switch</text>
+<path d="M380,69 L450,69" class="tr"/>
+<path d="M438,64 L450,69 L438,74 Z" class="ta"/>
+<text x="415" y="61" class="ts" text-anchor="middle">P-02 on</text>
+<path d="M630,58 L800,58" class="tr"/>
+<path d="M788,53 L800,58 L788,63 Z" class="ta"/>
+<text x="715" y="50" class="ts" text-anchor="middle">LS-01 high ≥ lshon</text>
+<path d="M800,82 L630,82" class="tr"/>
+<path d="M642,77 L630,82 L642,87 Z" class="ta"/>
+<text x="715" y="100" class="ts" text-anchor="middle">clear ≥ lshoff + p1off</text>
+<rect x="20" y="250" width="170" height="58" rx="10" class="st"/>
+<text x="105.0" y="274" class="tb" text-anchor="middle">C2_ISOLATE</text>
+<text x="105.0" y="292" class="ts" text-anchor="middle">P-01 off, SOV closed</text>
+<rect x="250" y="250" width="180" height="58" rx="10" class="st"/>
+<text x="340.0" y="274" class="tb" text-anchor="middle">C2_OPEN_BV01</text>
+<text x="340.0" y="292" class="ts" text-anchor="middle">LED fast blink</text>
+<rect x="520" y="250" width="170" height="58" rx="10" class="st"/>
+<text x="605.0" y="274" class="tb" text-anchor="middle">C2_FLUSH</text>
+<text x="605.0" y="292" class="ts" text-anchor="middle">P-01 d1f + P-03 d3</text>
+<rect x="800" y="250" width="200" height="58" rx="10" class="st"/>
+<text x="900.0" y="274" class="tb" text-anchor="middle">C2_HOLD_LSH</text>
+<text x="900.0" y="292" class="ts" text-anchor="middle">P-01 + P-03 off</text>
+<rect x="1050" y="250" width="180" height="58" rx="10" class="st done"/>
+<text x="1140.0" y="274" class="tb" text-anchor="middle">COMPLETE</text>
+<text x="1140.0" y="292" class="ts" text-anchor="middle">latched safe OFF</text>
+<path d="M540,98 L540,180 L105,180 L105,250" class="tr"/>
+<path d="M100,238 L105,250 L110,238 Z" class="ta"/>
+<text x="330" y="172" class="ts" text-anchor="middle">t ≥ tc1 while not holding</text>
+<path d="M190,279 L250,279" class="tr"/>
+<path d="M238,274 L250,279 L238,284 Z" class="ta"/>
+<text x="220" y="271" class="ts" text-anchor="middle">1 s</text>
+<path d="M430,279 L520,279" class="tr"/>
+<path d="M508,274 L520,279 L508,284 Z" class="ta"/>
+<text x="475" y="271" class="ts" text-anchor="middle">ZSO-01 or tbv</text>
+<path d="M690,268 L800,268" class="tr"/>
+<path d="M788,263 L800,268 L788,273 Z" class="ta"/>
+<text x="745" y="260" class="ts" text-anchor="middle">LS-01 high</text>
+<path d="M800,292 L690,292" class="tr"/>
+<path d="M702,287 L690,292 L702,297 Z" class="ta"/>
+<text x="745" y="310" class="ts" text-anchor="middle">clear</text>
+<path d="M605,308 L605,360 L1140,360 L1140,308" class="tr"/>
+<path d="M1135,320 L1140,308 L1145,320 Z" class="ta"/>
+<text x="870" y="378" class="ts" text-anchor="middle">TK-03 empty: LSL-03 ≥ 0.3 s, or IT-03 dry ≥ 0.5 s, or tfmax</text>
+<rect x="1050" y="40" width="180" height="58" rx="10" class="st stop"/>
+<text x="1140" y="64" class="tb" text-anchor="middle">STOPPED</text>
+<text x="1140" y="82" class="ts" text-anchor="middle">switch, any running state</text>
+<text x="620" y="430" class="t" text-anchor="middle">P-02 stays at 100% from C1_RUN until COMPLETE; interlocks I-1…I-4 sit between this logic and the outputs.</text>
+<text x="620" y="450" class="t" text-anchor="middle">COMPLETE brakes all pumps and keeps SOV-01 de-energised; the next switch press returns to IDLE.</text>
+</svg></div>
+    <figcaption>Figure 4. Sequence state machine. One switch press runs the whole job; the only manual action is opening BV-01 while the LED blinks fast.</figcaption>
+  </figure>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Interlock</th><th>Trips when</th><th>Action</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>I-1</td><td>LS-01 high (debounced 0.5 s), or a broken float wire</td><td>P-01 and P-03 off, SOV-01 closed. Never bypassed.</td><td>Overfill protection for TK-02.</td></tr>
+        <tr><td>I-2</td><td>P-03 asked to run while P-01 is stopped or SOV-01 is open</td><td>P-03 held off.</td><td>P-03 must discharge into a running P-01 with TK-01 isolated.</td></tr>
+        <tr><td>I-3</td><td>SOV-01 asked open while P-03 runs</td><td>SOV-01 held closed.</td><td>Flush water must never flow back into TK-01.</td></tr>
+        <tr><td>I-4</td><td>No flow with low current > 5 s (dry run), or no flow with high or cycling current > 3 s (blocked)</td><td>P-02 tripped. A dry-run trip retries after 10 s, up to 3 times. Partial-flow patterns only raise an event.</td><td>Protects the pump and FT-01 (0.8 MPa) without letting a noisy reading stop P-02 on camera.</td></tr>
+        <tr><td>Boot</td><td>Reset or brown-out</td><td>Every driver pin goes LOW in the first statement; the NC SOV closes.</td><td>Fail-safe start. The reset reason is logged.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="panel">
+    <h3>Firmware test bench (not evidence)</h3>
+    <p class="small muted">The simulator compiles <code>main.cpp</code> unchanged against mock ESP32 functions and a tank, pump and valve model, then plays the single take and four failure cases (<code>test/sim_rig.cpp</code> in the kit). It exists to catch logic bugs before bench time. The round says “no simulations”, so none of its output goes into the video or the paper. Re-run it after any firmware change.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Scenario</th><th>What happened</th><th>Result</th></tr></thead>
+        <tbody>
+        <tr><td>S1 nominal single take</td><td>Pour at 90 s holds P-01 within 0.5 s; P-02 never stops; Case 1 mean 2.99 L/min; flush ends on LSL-03 with 0.06 L left; sump peak 3.2 L</td><td><span class="pill ok">pass</span></td></tr>
+        <tr><td>S2 BV-01 opened late</td><td>P-03 dry while TK-03 is full → re-prompt instead of a false COMPLETE; flush then completes on LSL-03</td><td><span class="pill ok">pass</span></td></tr>
+        <tr><td>S3 float wire broken</td><td>I-1 holds P-01 and SOV-01 off; P-02 drains the sump and trips on dry run (fail-safe)</td><td><span class="pill ok">pass</span></td></tr>
+        <tr><td>S4 FT-01 unplugged mid-run</td><td>Diagnosed FT01_SIGNAL_FAILURE in 1.9 s; no trip, process continues</td><td><span class="pill ok">pass</span></td></tr>
+        <tr><td>S5 15% current noise</td><td>No protective trip; P-02 never stops</td><td><span class="pill ok">pass</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <h3>Fault signatures (answers Q3.2, runs live in firmware)</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Diagnosis</th><th>P-02 cmd</th><th>FT-01 pulses</th><th>IT-02 current vs baseline</th><th>Physical cause</th><th>Firmware reaction</th></tr></thead>
+      <tbody>
+        <tr><td><code>NORMAL</code></td><td>ON</td><td>normal</td><td>≈ baseline</td><td>–</td><td>none</td></tr>
+        <tr><td><code>RESTRICTION</code></td><td>ON</td><td>reduced</td><td>up > 8%</td><td>Valve partly closed, kink, partial blockage (B)</td><td>event; under FIC the extra duty is flagged</td></tr>
+        <tr><td><code>DISCHARGE_BLOCKED</code></td><td>ON</td><td>zero</td><td>up > 15% or cycling</td><td>Outlet closed or blocked; pump pressure switch cycling (C)</td><td>trip P-02 after 3 s</td></tr>
+        <tr><td><code>SUCTION_LOSS</code></td><td>ON</td><td>zero</td><td>down > 20%</td><td>Dry sump, air lock, BV-03 shut (C)</td><td>trip after 5 s, retry ×3</td></tr>
+        <tr><td><code>PARTIAL_SUCTION</code></td><td>ON</td><td>reduced</td><td>down > 15%</td><td>Air leak at a suction joint, low sump (B/E)</td><td>event only, never a trip</td></tr>
+        <tr><td><code>PUMP_FAILURE</code></td><td>ON</td><td>zero</td><td>≈ 0 A</td><td>Motor, driver, fuse or wiring (C/D)</td><td>alarm</td></tr>
+        <tr><td><code>FT01_SIGNAL_FAILURE</code></td><td>ON</td><td>zero</td><td>≈ baseline</td><td>Sensor wire, connector, jammed rotor (C)</td><td>alarm; the process keeps running</td></tr>
+        <tr><td><code>UNSTABLE_FLOW</code></td><td>ON</td><td>intermittent</td><td>fluctuating</td><td>Air drawn in, cavitation, pressure switch cycling (E)</td><td>event</td></tr>
+        <tr><td><code>FT01_INTERMITTENT</code></td><td>ON</td><td>intermittent</td><td>steady</td><td>Loose connector, interference (E)</td><td>alarm</td></tr>
+        <tr><td><code>NO_FLOW_CAUSE_UNKNOWN</code></td><td>ON</td><td>zero</td><td>not wired</td><td>FT-01 alone cannot tell (C)</td><td>shows why more data is needed</td></tr>
+        <tr><td><code>SPURIOUS_PULSES</code></td><td>OFF</td><td>present</td><td>0 A</td><td>Siphoning, interference on the pulse line</td><td>event</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="tool" id="diagnoser">
+    <header><h3>Diagnoser</h3><span class="note">The firmware's rules, for working through a symptom at the bench.</span></header>
+    <div class="fields">
+      <div class="field"><label for="dg-pump">Pump command</label><select id="dg-pump"><option value="on">ON</option><option value="off">OFF</option></select></div>
+      <div class="field"><label for="dg-pulse">FT-01 pulses</label><select id="dg-pulse"><option value="normal">normal</option><option value="reduced">reduced</option><option value="zero" selected>zero</option><option value="intermittent">intermittent</option></select></div>
+      <div class="field"><label for="dg-cur">Pump current</label><select id="dg-cur"><option value="unknown" selected>not measured</option><option value="normal">normal</option><option value="high">high or cycling on/off</option><option value="low">low</option><option value="zero">about zero</option><option value="fluct">fluctuating</option></select></div>
+    </div>
+    <div id="dg-out" class="panel" style="background:var(--bg)"></div>
+  </div>
+  <div class="grid2">
+    <div class="panel">
+      <h3>Console commands</h3>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Command</th><th>Does</th></tr></thead>
+          <tbody>
+        <tr><td><code>START · STOP · RESET</code></td><td>Run the sequence, stop everything, clear alarms. The switch does the same.</td></tr>
+        <tr><td><code>MANUAL · P n duty · SOV 0/1</code></td><td>Drive pump n (1–3) at a duty % and the valve directly. Interlocks stay on.</td></tr>
+        <tr><td><code>ILK 0 · ILK 1</code></td><td>Bypass I-2 and I-3 for a single-pump test (MANUAL only). I-1 can never be bypassed.</td></tr>
+        <tr><td><code>CAL s duty</code></td><td>Timed P-02 run into the weigh bucket. Prints C,ms,run,pulses,t,f,duty.</td></tr>
+        <tr><td><code>FIC · SET sp 3.0</code></td><td>Closed-loop flow control on P-02, with P-01 on float control.</td></tr>
+        <tr><td><code>SET k v · GET · SAVE · DEFAULTS</code></td><td>Read and change parameters, stored in flash.</td></tr>
+        <tr><td><code>MARK text</code></td><td>Write a marker into the log. For valve positions use MARK V50.</td></tr>
+        <tr><td><code>TOUCHCAL EMPTY · TOUCHCAL WET</code></td><td>Store the LSL-03 probe reading dry (EMPTY) or wet (WET).</td></tr>
+        <tr><td><code>IZERO · ZERO · LEARN</code></td><td>Zero the current offsets, clear the totalisers, re-learn the diagnosis baseline.</td></tr>
+        <tr><td><code>BURST · PINS · HDR · NEXT</code></td><td>Pulse-period dump; raw inputs; CSV header; skip the rest of Case 1 (rehearsal only).</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Parameters to set at the bench</h3>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Key</th><th class="num">Default</th><th>Set from</th></tr></thead>
+          <tbody>
+        <tr><td><code>a</code></td><td class="num">0.010204</td><td>workbench (M3)</td></tr>
+        <tr><td><code>b</code></td><td class="num">0</td><td>workbench (M3)</td></tr>
+        <tr><td><code>fcut</code></td><td class="num">3 Hz</td><td>workbench (M3)</td></tr>
+        <tr><td><code>d1</code></td><td class="num">0.50</td><td>P-01 duty finder (M1)</td></tr>
+        <tr><td><code>d2</code></td><td class="num">1.00</td><td>spec: leave at 1.00</td></tr>
+        <tr><td><code>d1f · d3</code></td><td class="num">0.50 · 0.45</td><td>M5: P-03 a little weaker than P-01 keeps the tee below atmospheric, so SOV-01 stays pressed shut</td></tr>
+        <tr><td><code>tc1</code></td><td class="num">240 s</td><td>storyboard: length of Case 1</td></tr>
+        <tr><td><code>lshon · lshoff · p1off</code></td><td class="num">500 · 3000 · 5000 ms</td><td>M4: float behaviour</td></tr>
+        <tr><td><code>bvmode · tbv</code></td><td class="num">0 · 15 s</td><td>set bvmode 1 if ZSO-01 is fitted</td></tr>
+        <tr><td><code>tchE · tchF</code></td><td class="num">0 · 0.5</td><td>TOUCHCAL EMPTY with the probe dry (M5)</td></tr>
+        <tr><td><code>i3dry</code></td><td class="num">0 A</td><td>M5: midway between P-03's wet and dry current at d3</td></tr>
+        <tr><td><code>g1 · g2 · g3</code></td><td class="num">0.004255 A/mV</td><td>DMM calibration (M1)</td></tr>
+        <tr><td><code>isok</code></td><td class="num">1</td><td>0 if current sensing is not wired</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">Change with <code>SET key value</code>, keep with <code>SAVE</code>. <code>GET</code> lists them all.</p>
+    </div>
+  </div>
+</section>
+
+<section class="sheet" id="calibration">
+  <div class="sheet-head">
+    <p class="eyebrow">Sheet 06 · Bench log, calibration and characterisation</p>
+    <h2>Record what the hardware says, then weigh it</h2>
+    <p class="lede">ISO 4185 static weighing. The ESP32 starts and stops P-02 itself and counts every pulse until the rotor stops, so f = N/t and Q = V/t share one exact window. Those are the paper's own formulas, without stopwatch error. Calibrate in place, through the final FT-01 spool, with the pump's real pulsation.</p>
+  </div>
+  <div class="tool bench" id="bench">
+    <header><h3>Bench log</h3><span class="note" id="bench-mode">Saved in this browser until shared storage connects.</span></header>
+    <p class="small muted">Type each reading as soon as it is measured; it saves when you leave the box. These readings set the firmware parameters and decide every open question on sheet 10, so write the number with its unit, plus any surprise.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Measurement</th><th>How</th><th>When · who</th><th>Value</th><th>Entered</th></tr></thead>
+        <tbody>
+        <tr><td>Tube bore, 8 mm blue tube</td><td class="small">Calipers on a square-cut end, or the largest drill-bit shank that slides in (mm)</td><td class="small">Fri 08 · HY</td><td><input type="text" data-bench="b-bore" aria-label="Tube bore, 8 mm blue tube" maxlength="300" autocomplete="off"></td><td class="who" data-bench-who="b-bore"></td></tr>
+        <tr><td>FT-01 barb outside diameter and bore</td><td class="small">Calipers (mm). Decides how the tube goes on.</td><td class="small">Fri 08 · HY</td><td><input type="text" data-bench="b-barb" aria-label="FT-01 barb outside diameter and bore" maxlength="300" autocomplete="off"></td><td class="who" data-bench-who="b-barb"></td></tr>
+        <tr><td>IBT-2 IS resistor to GND, boards 1 / 2 / 3</td><td class="small">DMM, unpowered, IS pin to GND (kΩ)</td><td class="small">Fri 09 · EF</td><td><input type="text" data-bench="b-isr" aria-label="IBT-2 IS resistor to GND, boards 1 / 2 / 3" maxlength="300" autocomplete="off"></td><td class="who" data-bench-who="b-isr"></td></tr>
+        <tr><td>FT-01 output: push-pull or pull-up; high level open and with 10 kΩ to GND</td><td class="small">Scope while blowing gently through the meter (V)</td><td class="small">M1 · EF</td><td><input type="text" data-bench="b-ftout" aria-label="FT-01 output: push-pull or pull-up; high level open and with 10 kΩ to GND" maxlength="300" autocomplete="off"></td><td class="who" data-bench-who="b-ftout"></td></tr>
+        <tr><td>ESP32 reset when all three pumps start together?</td><td class="small">Watch for a BOOT event in the console (yes or no)</td><td class="small">M1 · EF</td><td><input type="text" data-bench="b-brown" aria-label="ESP32 reset when all three pumps start together?" maxlength="300" autocomplete="off"></td><td class="who" data-bench-who="b-brown"></td></tr>
+        <tr><td>Glitch count over 60 s with the pumps on and FT-01 dry</td><td class="small">Console <code>glitches</code> column, start and end</td><td class="small">M1 · EF</td><td><input type="text" data-bench="b-glitch" aria-label="Glitch count over 60 s with the pumps on and FT-01 dry" maxlength="300" autocomplete="off"></td><td class="who" data-bench-who="b-glitch"></td></tr>
+        <tr><td>Minimum starting duty, P-01 / P-02 / P-03</td><td class="small">MANUAL, ramp up from 10% (%)</td><td class="small">M1 · EF</td><td><input type="text" data-bench="b-mind" aria-label="Minimum starting duty, P-01 / P-02 / P-03" maxlength="300" autocomplete="off"></td><td class="who" data-bench-who="b-mind"></td></tr>
+        <tr><td>Current gains g1 / g2 / g3</td><td class="small">DMM in series against the console reading, at two duties (A/mV)</td><td class="small">M1 · EF</td><td><input type="text" data-bench="b-isgain" aria-label="Current gains g1 / g2 / g3" maxlength="300" autocomplete="off"></td><td class="who" data-bench-who="b-isgain"></td></tr>
+        <tr><td>P-01 flow through SOV-01 at 50 / 60 / 70 / 100%</td><td class="small">P-01 duty finder on this sheet (L/min)</td><td class="small">M1 · DC</td><td><input type="text" data-bench="b-p1" aria-label="P-01 flow through SOV-01 at 50 / 60 / 70 / 100%" maxlength="300" autocomplete="off"></td><td class="who" data-bench-who="b-p1"></td></tr>
+        <tr><td>LSL-03 probe reading, dry / wet</td><td class="small"><code>PINS</code>: the touch value out of water and in water</td><td class="small">M1 · EF</td><td><input type="text" data-bench="b-touch" aria-label="LSL-03 probe reading, dry / wet" maxlength="300" autocomplete="off"></td><td class="who" data-bench-who="b-touch"></td></tr>
+        <tr><td>Sump volume at the LS-01 trip</td><td class="small">Pour from a weighed jug until <code>lsh</code> turns 1 (L)</td><td class="small">M2 · HY</td><td><input type="text" data-bench="b-trip" aria-label="Sump volume at the LS-01 trip" maxlength="300" autocomplete="off"></td><td class="who" data-bench-who="b-trip"></td></tr>
+        <tr><td>Maximum loop flow, P-02 at 100%, BV-02 open</td><td class="small">Console, mean over 30 s (L/min)</td><td class="small">M2 · DC</td><td><input type="text" data-bench="b-qmax" aria-label="Maximum loop flow, P-02 at 100%, BV-02 open" maxlength="300" autocomplete="off"></td><td class="who" data-bench-who="b-qmax"></td></tr>
+        <tr><td>BV-02 position that gives 3.0 L/min with P-02 at 100%</td><td class="small">Dial reading (%), checked over 3 min</td><td class="small">M4 · DC</td><td><input type="text" data-bench="b-bv02" aria-label="BV-02 position that gives 3.0 L/min with P-02 at 100%" maxlength="300" autocomplete="off"></td><td class="who" data-bench-who="b-bv02"></td></tr>
+        <tr><td>P-03 current wet / dry at d3</td><td class="small">MANUAL with <code>ILK 0</code>, then lift the dip tube out (A)</td><td class="small">M5 · EF</td><td><input type="text" data-bench="b-i3" aria-label="P-03 current wet / dry at d3" maxlength="300" autocomplete="off"></td><td class="who" data-bench-who="b-i3"></td></tr>
+        <tr><td>Anything that surprised you</td><td class="small">Free text: what happened, when, and what you changed</td><td class="small">any · all</td><td><input type="text" data-bench="b-note" aria-label="Anything that surprised you" maxlength="300" autocomplete="off"></td><td class="who" data-bench-who="b-note"></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <p class="lede">The scale is the primary standard. ISO 4185 static weighing: weigh the water, never trust a stopwatch.</p>
+  <div class="grid2">
+    <div class="panel">
+      <h3>Procedure (about 75 min for 15 runs)</h3>
+      <ol class="tight">
+        <li>Freeze the FT-01 spool: no tube moves near the meter from now on.</li>
+        <li>Lay the L-202 end into a bucket on the scale, falling continuously so it drains the same way every time. Tare.</li>
+        <li>Pick five duties from the duty map to give about 1, 2, 3, 4 L/min and the maximum. Do 3 runs each.</li>
+        <li>Console: <code>CAL 60 35</code> (seconds, duty %). Use 90 s below 1.5 L/min and 40 s above 4 L/min, keeping each run under 4.5 kg.</li>
+        <li>Wait for the <code>CAL_DONE</code> event, which comes once the rotor has stopped. Weigh, enter the net grams below, and pour the water back into TK-02.</li>
+        <li>Paste the SET lines into the console, then <code>SAVE</code>. Verify with one more 3 L/min run; it must agree with the scale within ±2%.</li>
+      </ol>
+    </div>
+    <div class="panel">
+      <h3>What good looks like</h3>
+      <ul class="tight">
+        <li>R² ≥ 0.995, maximum error ≤ 3%, repeats within ±1% of each other.</li>
+        <li>K within ±10% of the datasheet's 5,880 pulses/L. A larger miss means air in the meter or a cracked rotor seat.</li>
+        <li>A positive offset b is physical: the rotor needs a minimum flow to turn. The firmware zeroes Q below fcut, so b never adds to the totaliser at rest.</li>
+        <li>Pulse duty on the console ≈ 50 ± 10%. Any other value means a magnet or wiring fault.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="tool" id="cal">
+    <header>
+      <h3>Calibration workbench</h3>
+      <span class="note" id="cal-sync">Shared with the team once this page connects.</span>
+    </header>
+    <div class="fields">
+      <div class="field"><label for="cal-pulses">Pulses N</label><input type="number" id="cal-pulses" step="1" min="0"></div>
+      <div class="field"><label for="cal-time">Time t (s)</label><input type="number" id="cal-time" step="0.001" min="0"></div>
+      <div class="field"><label for="cal-mass">Net mass (g)</label><input type="number" id="cal-mass" step="1" min="0"></div>
+      <div class="field"><label for="cal-duty">Duty %</label><input type="number" id="cal-duty" class="narrow" step="1" min="0" max="100"></div>
+      <div class="field"><label for="cal-note">Note</label><input type="text" id="cal-note" placeholder="e.g. repeat 2"></div>
+      <button class="primary" id="cal-add" type="button">Add run</button>
+      <div class="field"><label for="cal-rho">Density (g/L)</label><input type="number" id="cal-rho" step="0.1" value="1000" class="narrow"></div>
+    </div>
+    <details>
+      <summary class="small">Paste <code>C,…</code> lines from the console instead</summary>
+      <textarea id="cal-paste" placeholder="C,812345,1,17643,60.004,294.04,0.62"></textarea>
+      <button class="ghost" id="cal-paste-go" type="button">Add pasted runs (mass to fill in)</button>
+    </details>
+    <div id="cal-example" class="banner" hidden>Example runs are shown so you can see the outputs. They are not your data and will disappear when your first run is added.</div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>#</th><th class="num">Pulses</th><th class="num">t (s)</th><th class="num">f (Hz)</th><th class="num">Mass (g)</th><th class="num">V (L)</th><th class="num">Q actual (L/min)</th><th class="num">Q fit</th><th class="num">Error %</th><th class="num">K (p/L)</th><th></th></tr></thead>
+        <tbody id="cal-rows"></tbody>
+      </table>
+    </div>
+    <div class="out" id="cal-out"></div>
+    <div class="grid2">
+      <figure><svg class="chart" id="cal-chart" viewBox="0 0 560 330" role="img" aria-label="Actual flow against pulse frequency with the fitted line"></svg><figcaption class="small">Q against f: fit, 95% prediction band, datasheet line Q = f/98.</figcaption></figure>
+      <figure><svg class="chart" id="cal-resid" viewBox="0 0 560 330" role="img" aria-label="Fit error in percent against actual flow"></svg><figcaption class="small">Fit error per run; shaded band ±2%.</figcaption></figure>
+    </div>
+    <div class="cmd"><pre id="cal-cmds">Add three or more weighed runs to get the SET commands.</pre><button class="ghost" data-copy-from="#cal-cmds" type="button">Copy</button></div>
+    <div class="fields"><button class="ghost" id="cal-csv" type="button">Export runs as CSV</button><span class="note" id="cal-csv-note"></span></div>
+  </div>
+  <div class="tool" id="p1duty">
+    <header><h3>P-01 duty finder (milestone M1)</h3><span class="note">Pump TK-01 → SOV-01 → P-01 → bucket on the scale for 30 s at each duty.</span></header>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Duty %</th><th>Net mass (g)</th><th>Time (s)</th><th class="num">Q (L/min)</th></tr></thead>
+        <tbody id="p1-rows"></tbody>
+      </table>
+    </div>
+    <div class="fields">
+      <div class="field"><label for="p1-target">Loop target (L/min)</label><input type="number" id="p1-target" step="0.1" value="3.0" class="narrow"></div>
+      <div class="field"><label for="p1-margin">Surplus %</label><input type="number" id="p1-margin" step="1" value="10" class="narrow"></div>
+    </div>
+    <div class="out" id="p1-out"></div>
+    <div class="cmd"><pre id="p1-cmd">Enter at least two duties.</pre><button class="ghost" data-copy-from="#p1-cmd" type="button">Copy</button></div>
+    <p class="note">Values stay in this browser only. A 10% surplus lets LS-01 cycle P-01 gently while P-02 holds 3.0 L/min steady.</p>
+  </div>
+  <div class="grid2">
+    <div class="panel">
+      <h3>Task 2 valve test</h3>
+      <ol class="tight">
+        <li>P-02 at 100% (spec). Start from BV-02 at 100%, then go 75 → 70 → 50 → 25 → 50 → 75 → 100%. The way back up checks hysteresis.</li>
+        <li>After each move, type <code>MARK V50</code> (and so on), hold 60 s, then <code>MARK END</code> at the finish.</li>
+        <li><code>python analyze_run.py valve TELEMETRY EVENTS</code> gives the table, the steady values, the time constant and the plot.</li>
+        <li>Expect a flat curve from 100% down to about 50%, then a steep fall. The diaphragm pump is positive-displacement, so the valve has little authority until it dominates. IT-02 rises as the discharge pressure rises.</li>
+      </ol>
+    </div>
+    <div class="panel">
+      <h3>Flow control (optional, M6)</h3>
+      <ol class="tight">
+        <li>Duty map: hold P-02 at 30, 50, 70 and 90% for 10 s each in MANUAL. <code>analyze_run.py dutymap</code> prints <code>SET ffq0/ffq1</code>.</li>
+        <li>Step test: 50% → 70%. <code>analyze_run.py step</code> fits K, θ, τ and gives lambda-tuned <code>kc</code> and <code>ti</code>.</li>
+        <li><code>FIC</code> and <code>SET sp 3.0</code>, then close BV-02 to 50%. The loop should restore 3.0 L/min within about 3 s, and FDI should report RESTRICTION from the extra duty.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<section class="sheet" id="answers">
+  <div class="sheet-head">
+    <p class="eyebrow">Sheet 07 · Answer support</p>
+    <h2>Worked answers, ready for measured numbers</h2>
+    <p class="lede">The theory is done here so bench time goes to measurement. Copy the numbers from the calculators into the paper, and attach the plots from the tools.</p>
+  </div>
+  <div class="tool" id="velocity">
+    <header><h3>Q1.2 velocity, theory against the real bore</h3><span class="note">v = Q/A, Re = ρvD/μ, Blasius f = 0.316 Re<sup>−0.25</sup></span></header>
+    <div class="fields">
+      <div class="field"><label for="v-nom">Paper diameter (mm)</label><input type="number" id="v-nom" step="0.1" value="8.0" class="narrow"></div>
+      <div class="field"><label for="v-id">Measured bore (mm)</label><input type="number" id="v-id" step="0.05" value="5.0" class="narrow"></div>
+      <div class="field"><label for="v-q1">Achieved at ~1 (L/min)</label><input type="number" id="v-q1" step="0.01" placeholder="measured"></div>
+      <div class="field"><label for="v-q3">Achieved at ~3</label><input type="number" id="v-q3" step="0.01" placeholder="measured"></div>
+      <div class="field"><label for="v-q6">Achieved at max</label><input type="number" id="v-q6" step="0.01" placeholder="measured"></div>
+    </div>
+    <div class="tablewrap"><table><thead><tr><th>Flow</th><th class="num">v @ paper D (m/s)</th><th class="num">Re</th><th class="num">v @ bore (m/s)</th><th class="num">Re</th><th>Regime</th><th class="num">Δp (kPa/m)</th><th class="num">1 m transit (s)</th></tr></thead><tbody id="v-rows"></tbody></table></div>
+    <p class="note">Write-up: the paper's 8 mm is the tube's outside diameter. The bore is 5 mm, so the real velocity is (8/5)² = 2.56 times the "theoretical" one, and every operating point is turbulent. The flow is also not steady: <code>BURST</code> + <code>analyze_run.py burst</code> shows the diaphragm strokes as ripple on the pulse-by-pulse flow. A food-dye front timed over a marked 1.00 m of clear tube travels at about 1.2 × v<sub>mean</sub>, as a turbulent profile predicts. The friction (≈ 19 kPa/m at 3 L/min) is why 6 L/min is out of reach through this loop; report the measured maximum and explain it with the pump and system curves.</p>
+  </div>
+  <div class="grid2">
+    <div class="tool" id="residence">
+      <header><h3>Q3.1 residence time</h3></header>
+      <div class="fields">
+        <div class="field"><label for="r-v">Volume V (L)</label><input type="number" id="r-v" step="0.1" value="0.5" class="narrow"></div>
+        <div class="field"><label for="r-q">Flow Q (L/min)</label><input type="number" id="r-q" step="0.1" value="2.5" class="narrow"></div>
+      </div>
+      <div class="out" id="r-out"></div>
+      <div class="fields">
+        <div class="field"><label for="r-sump">Sump held (L)</label><input type="number" id="r-sump" step="0.1" value="2.5" class="narrow"></div>
+        <div class="field"><label for="r-flush">Flush volume (L)</label><input type="number" id="r-flush" step="0.1" value="4.2" class="narrow"></div>
+      </div>
+      <div class="out" id="r-wash"></div>
+    </div>
+    <div class="panel">
+      <h3>Q3.1 written answer</h3>
+      <p><strong>τ = V/Q = 0.5 L ÷ 2.5 L/min = 0.2 min = 12 s.</strong> The sheet prints T<sub>r</sub> = Q/V; that ratio, 5 min<sup>−1</sup>, is the turnover rate, and residence time is its inverse.</p>
+      <ol class="tight">
+        <li><strong>Meaning:</strong> the average time a fluid parcel spends in that section. It is also the time to displace the section once, and the transport delay between something entering and it reaching the meter. Turbulent flow behaves close to plug flow.</li>
+        <li><strong>V doubled:</strong> τ doubles, to 24 s.</li>
+        <li><strong>Q doubled:</strong> τ halves, to 6 s.</li>
+        <li><strong>Why it matters:</strong> in a full, incompressible line, a change in pump or valve shows up at FT-01 almost at once, because pressure waves travel at hundreds of m/s. Anything carried by the fluid (an air slug, the flush front, a contaminant) arrives τ later. A tank with a free surface breaks the chain: on our rig the flush tank running dry is invisible at FT-01 until the sump drains. So we detect it at the source (LSL-03, IT-03). Residence time also sets alarm delays and the dead time a controller must tolerate.</li>
+      </ol>
+      <p class="note">Bonus insight: the sump is a mixed tank. Pushing 4.2 L through about 2.5 L of mixed liquid leaves e<sup>−4.2/2.5</sup> ≈ 19% of the original fluid behind. Lower the sump first, or flush longer.</p>
+    </div>
+  </div>
+  <h3>Decision log: each choice and the data behind it</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Decision</th><th>Data that forced it (fill in the blanks at the bench)</th><th>Where it shows</th></tr></thead>
+      <tbody>
+        <tr><td>P-01 duty d1 = ___ %</td><td>P-01 duty finder: Q at 50% = ___ L/min, below the 3.3 needed. SOV-01's orifice (Cv ≈ 0.23) costs ≈ 0.8 bar on the suction side.</td><td>Video 2:30; paper Q1.1 notes</td></tr>
+        <tr><td>FT-01 after BV-02</td><td>FT-01 is rated 0.8 MPa; the pumps dead-head at 8.25 bar.</td><td>P&amp;ID note 2</td></tr>
+        <tr><td>Calibrated in place</td><td>Measured K = ___ pulses/L against the datasheet's 5,880 (___ %).</td><td>Certificate; Q2.2</td></tr>
+        <tr><td>Top-entry dip tubes</td><td>No wall penetration below the liquid except LS-01, so no leak path at the joints.</td><td>P&amp;ID note 1; photos</td></tr>
+        <tr><td>LSL-03 at the dip-tube inlet</td><td>Trips with under 0.1 L left in TK-03 (event log), against about 0.4 L for a wall foil.</td><td>Single take; M5 log</td></tr>
+        <tr><td>Sump starts at trip − 0.2 L</td><td>LS-01 trip volume measured as ___ L; the 0.8 L pour must cross it.</td><td>Inventory planner</td></tr>
+        <tr><td>Velocities use the 5 mm bore</td><td>Calipers: ID = ___ mm. At 3 L/min, v = 2.55 m/s, not 0.99 m/s.</td><td>Q1.2</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="panel">
+    <h3>Q2 interpretation, ready for the measured numbers</h3>
+    <dl class="q2">
+      <dt>Q2.1</dt><dd>With a positive-displacement pump, the flow barely changes between 100% and about 50% opening. Below that the valve dominates and the flow falls steeply, while P-02's current rises with the discharge pressure. This is the installed characteristic; the ball valve's own curve is quick-opening.</dd>
+      <dt>Q2.2</dt><dd>a = ___ L/min per Hz, so K = 60/a = ___ pulses/L (___ % from the datasheet's 5,880). b = ___ L/min is the small flow needed before the rotor turns, which is why the firmware reports zero below fcut. R² = ___: FT-01 is linear over 1–___ L/min, and its largest error sits at the lowest flow, where the rotor slips most.</dd>
+      <dt>Q2.3</dt><dd>f = N/t and Q = V/t share one ESP32-timed window. V comes from the weighed mass at ρ = 1000 g/L as given; at 22 °C water is 997.8 g/L, which would change Q by 0.2%.</dd>
+    </dl>
+  </div>
+  <div class="panel">
+    <h3>Q3.2 written answer</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Cond.</th><th>Most likely</th><th>Could also be</th><th>What separates them</th></tr></thead>
+        <tbody>
+        <tr><td>A</td><td>Healthy operation.</td><td>–</td><td>Current at baseline, level steady.</td></tr>
+        <tr><td>B</td><td>Throttled valve: the pump works against higher pressure and the flow drops.</td><td>Partial blockage; worn pump valves.</td><td>Current rises with pressure, and the flow recovers when the valve reopens.</td></tr>
+        <tr><td>C</td><td>Ambiguous: blocked line, dry or air-locked pump, failed pump, or failed sensor.</td><td>–</td><td>Current high or cycling = blocked; low = dry; about 0 = pump; normal = sensor (fluid visibly moving, levels changing).</td></tr>
+        <tr><td>D</td><td>Normal: no pump, no flow.</td><td>If the pump was commanded on: pump, driver or supply failure.</td><td>Compare the command with the current.</td></tr>
+        <tr><td>E</td><td>Unstable flow: air drawn in at low sump level or through a leaky suction joint, cavitation, or the pressure switch cycling near dead-head.</td><td>Intermittent sensor signal (loose connector, interference).</td><td>Current fluctuates with the flow = hydraulic. Current steady while pulses drop out = sensor.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><strong>Hardest with FT-01 alone: C</strong> (pump on, valve open, no pulses), then E. FT-01 reports only "rotor turning". No flow and no signal look the same, and a blocked line, a dry or air-locked pump, a failed motor and a dead sensor all give zero. Telling them apart needs pump current or power, discharge pressure, tank level, valve position feedback, an independent volume check, and sensor health (supply voltage, a pulse duty of about 50%). The rig measures pump current and the sump and flush-tank levels (and valve position if ZSO-01 is fitted), and the firmware names the cause live (sheet 05).</p>
+  </div>
+</section>
+
+<section class="sheet" id="checklists">
+  <div class="sheet-head">
+    <p class="eyebrow">Sheet 08 · Checklists</p>
+    <h2>Tick as you go; the whole team sees it</h2>
+    <p class="lede" id="chk-mode">Ticks are shared once this page connects. Each tick records who made it and when.</p>
+  </div>
+  <div class="checks" id="checks"></div>
+</section>
+
+<section class="sheet" id="video">
+  <div class="sheet-head">
+    <p class="eyebrow">Sheet 09 · Video</p>
+    <h2>Storyboard: 14 minutes, with one unbroken take for Cases 1 and 2</h2>
+    <p class="lede">The single take proves "no manual intervention except BV-01". Everything else is edited around it. Record the console screen with OBS, and sync it with one clap while the LED flashes.</p>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Time</th><th>Shot</th><th>On screen</th><th>Say (the judges are listening for)</th></tr></thead>
+      <tbody>
+        <tr><td>0:00–0:30</td><td>Title card, then a 10 s preview of the automatic stop</td><td>“Establish · Measure · Detect · Diagnose · Restore”</td><td>The problem statement's own five verbs. Say that is how the video is organised.</td></tr>
+        <tr><td>0:30–2:30</td><td>Architecture: walk the rig with the P&amp;ID</td><td>P&amp;ID inset; tags on the hardware</td><td>Trace L-101 → L-102 → L-201/202 → L-301 aloud with the direction of flow. Name every component, as the paper asks.</td></tr>
+        <tr><td>2:30–3:30</td><td>Control and safety: PCB, drivers, add-on board</td><td>State machine and interlock table</td><td>Fail-safe choices: NC SOV, float open = high, interlocks I-1 to I-4, FT-01 after BV-02 because of its 0.8 MPa rating.</td></tr>
+        <tr><td>3:30–4:30</td><td>Measure: calibration montage</td><td>Workbench fit, then the certificate</td><td>Weighing as the reference; R², a, b, maximum and average error; ±x % at 3 L/min; K against the datasheet.</td></tr>
+        <tr><td>4:30–11:00</td><td>Establish: the SINGLE TAKE, no cuts</td><td>Console picture-in-picture; a caption at each event</td><td>Switch → Case 1 at 3.0 L/min → pour 0.8 L → P-01 stops, P-02 runs on, P-01 restarts → Case 2: SOV shuts, LED blinks, BV-01 opened → three pumps → TK-03 empty → automatic stop. Read out the stop latency.</td></tr>
+        <tr><td>11:00–12:30</td><td>Detect and diagnose: fault demos</td><td>DIAG events on the console</td><td>Unplug FT-01 → FT01_SIGNAL_FAILURE, process continues. Close BV-03 → SUCTION_LOSS trip. Explain why FT-01 alone cannot tell these apart (Q3.2).</td></tr>
+        <tr><td>12:30–13:15</td><td>Restore</td><td>FIC trend through a BV-02 disturbance</td><td>Close BV-02 to 50%: the loop restores 3.0 L/min and flags RESTRICTION from the extra duty.</td></tr>
+        <tr><td>13:15–14:00</td><td>Results card and close</td><td>R², max error, 3.0 ± x L/min, stop latency, valve curve; code link</td><td>One sentence per number. Name each team member's role. End inside 14:30.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h3>Single-take run script</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Role</th><th>Does</th><th>Never</th></tr></thead>
+      <tbody>
+        <tr><td>Operator</td><td>Presses the switch once. Opens BV-01 when the LED blinks fast (Case 2 +1 s).</td><td>Pressing the switch again: that is STOP.</td></tr>
+        <tr><td>Pourer</td><td>Pours the weighed 0.8 L into TK-02 at Case 1 +90 s on the console clock, away from the float.</td><td>Pouring onto the float or before the cue.</td></tr>
+        <tr><td>Narrator</td><td>Names each component and the direction of flow; reads out the numbers on screen.</td><td>Talking over the stop event.</td></tr>
+        <tr><td>Console watcher</td><td>Watches state, flow and alarms; calls the abort.</td><td>Touching the keyboard during the take.</td></tr>
+        <tr><td>Camera</td><td>Locked wide shot plus close-ups on cue: pour, LED, BV-01, TK-03 running dry.</td><td>Moving the wide shot.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="grid2">
+    <div class="panel">
+      <h3>Reset between rehearsals (about 6 min)</h3>
+      <ol class="tight">
+        <li>Console: <code>RESET</code>, then <code>ZERO</code>. Restarting the console is safe; it no longer reboots the ESP32.</li>
+        <li>Restore water by weight: TK-03 to 4.2 L, TK-02 to 2.3 L, the rest in TK-01. Weigh the 0.8 L pour jug again.</li>
+        <li>BV-01 shut, BV-02 on its trim mark, BV-03 open; the LSL-03 probe under water.</li>
+        <li>Dry the drip tray (a wet tray hides a new leak) and wipe any spill.</li>
+        <li>Cameras rolling, console logging; say the take number on camera.</li>
+        <li>Operator presses the switch once.</li>
+      </ol>
+    </div>
+    <div class="panel kill">
+      <h3>Abort rule</h3>
+      <p>Abort the take (STOP, reset, retake) on any drip, a pump that fails to start, a fast-blinking LED, P-01 still running 3 s after the pour, or flow more than 0.2 L/min off 3.0 for over 10 s.</p>
+      <p class="note">The console title shows “Case 1 +90 s” for the pour cue and “Case 2 +…” after the switch-over.</p>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="panel">
+      <h3>Recording setup</h3>
+      <ul class="tight">
+        <li>Phone A on a tripod, wide shot, 1080p60, locked exposure. Phone B handheld for close-ups of tags, the LED, the float and the BV-01 hand.</li>
+        <li>OBS records the laptop: console plots plus the event log. Picture-in-picture goes in the edit.</li>
+        <li>Clip-on mic or a phone voice memo near the speaker. No fans or pumps between the mic and the mouth.</li>
+        <li>Every component carries its P&amp;ID tag on white tape, plus arrows on the tubes. These double as the labelled photos.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3>Photos to submit</h3>
+      <ul class="tight">
+        <li>Whole rig, front, with every tag readable. Annotate it with the same tags as the P&amp;ID.</li>
+        <li>Electronics close-up: PCB, IBT-2s, add-on board, and the labelled harness.</li>
+        <li>Calibration setup: bucket on the scale, with the return line in it.</li>
+        <li>FT-01 spool with its straight runs; BV-02 with its dial.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="sheet" id="risks">
+  <div class="sheet-head">
+    <p class="eyebrow">Sheet 10 · Risk register</p>
+    <h2>Open questions, the descope ladder and when to replan</h2>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Open question</th><th>Cheapest experiment that answers it</th><th>When</th><th>If the answer is bad</th></tr></thead>
+      <tbody>
+        <tr><td>Does P-01 at 50% move ≥ 3.3 L/min through SOV-01?</td><td>P-01 duty finder: 4 × 30 s on the scale</td><td>M1</td><td>Raise TK-01 and use the strongest pump as P-01, then raise d1 (3.0 wins). Last resort: loop target = P-01's maximum, documented.</td></tr>
+        <tr><td>Is FT-01's output push-pull or pull-up?</td><td>Scope it open, then with 10 kΩ to GND</td><td>M1</td><td>Pick R1 and R2 from Figure 3.</td></tr>
+        <tr><td>Does the LSL-03 probe read clearly wet and dry?</td><td>PINS with the probe in water, then lifted out</td><td>M1</td><td>Expose more bare wire, or move the GND wire closer. If it still fails, rely on IT-03 plus the tfmax backstop.</td></tr>
+        <tr><td>Does each IBT-2 have 10 kΩ on IS, and what is its real sense ratio?</td><td>DMM: resistance to GND, then two current points</td><td>M1</td><td>Adjust the added resistor; per-channel gains g1–g3.</td></tr>
+        <tr><td>Does P-03's current drop clearly when it runs dry?</td><td>Run P-03 at d3 wet, then dry, in MANUAL with ILK 0</td><td>M5</td><td>Leave i3dry at 0: LSL-03 plus the tfmax backstop still end the flush.</td></tr>
+        <tr><td>What is the loop's maximum flow? Is 6 L/min reachable?</td><td>Duty map up to 100% with BV-02 open</td><td>M2</td><td>Report the measured maximum and explain it with the system curve.</td></tr>
+        <tr><td>How much does the sump hold at the LS-01 trip?</td><td>Fill TK-02 on the scale</td><td>M2</td><td>Enter it in the inventory planner.</td></tr>
+        <tr><td>What is each pump's minimum starting duty?</td><td>MANUAL ramp up from 10%</td><td>M1</td><td>Set a floor for d1, d3 and FIC (0.15 by default).</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="grid2">
+    <div class="panel">
+      <h3>Descope ladder (decided now)</h3>
+      <ol class="ladder">
+        <li><span>FIC closed-loop demo. Keep spec mode and the valve trim.</span></li>
+        <li><span>Fault demos beyond two. Keep the FT-01 unplug and the BV-02 throttle.</span></li>
+        <li><span>BURST pulsation analysis and the dye transit test.</span></li>
+        <li><span>The IT-01 channel and the ZSO-01 valve switch. Use the timed BV-01 window instead.</span></li>
+        <li><span>The LSL-03 capacitive trip. Fall back to IT-03 current plus the tfmax backstop.</span></li>
+      </ol>
+    </div>
+    <div class="grid2" style="grid-template-columns:1fr">
+      <div class="panel floor"><h3>Floor</h3><p>Case 1 and Case 2 automated to spec, FT-01 calibrated with Q = af + b and R², the P&amp;ID, the 10–15 min video and the answered paper. Nothing on the ladder may cost the floor.</p></div>
+      <div class="panel kill"><h3>Scope kill rule</h3><p>If Case 1 is not passing by Sat 14:00, every extra stops until it does. If Case 2 is not passing by Sat 22:00, record with the timed BV-01 window and the timeout backstop, and say so on camera.</p></div>
+      <div class="panel"><h3>Replan triggers</h3>
+        <ul class="tight">
+          <li>A finding on sheet 01 turns out wrong at the bench.</li>
+          <li>A milestone runs 50% over its estimate.</li>
+          <li>The ESP32 resets when pumps start (brown-out), or FT-01 counts pulses with no flow.</li>
+          <li>A leak is still open after two hours of rework.</li>
+          <li>The organisers answer differently on P-01's duty, the flush destination or the single take.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sheet" id="downloads">
+  <div class="sheet-head">
+    <p class="eyebrow">Sheet 11 · Downloads and revision history</p>
+    <h2>Everything needed to build it</h2>
+  </div>
+  <div class="grid2">
+    <div class="tool">
+      <header><h3>Build kit (the team)</h3></header>
+      <p>Firmware (one source that builds in PlatformIO and the Arduino IDE), the Python bench tools, the simulator, practice data, a CSV template, the printables and a README with the bring-up order.</p>
+      <div class="fields">
+        <button class="primary" id="dl-kit" type="button">Download build kit (.zip)</button>
+      </div>
+      <header><h3>Printables (print at 100%, no fit to page)</h3></header>
+      <div class="fields">
+        <button class="ghost" id="dl-labels" type="button">Tag and flow labels (A4 .svg)</button>
+        <button class="ghost" id="dl-dial" type="button">BV-02 dial (A4 .svg)</button>
+        <button class="ghost" id="dl-pid" type="button">P&amp;ID (.svg, print A3)</button>
+      </div>
+      <header><h3>Code to share (the judges)</h3></header>
+      <p class="small">Firmware, analysis tools and diagrams with a README written for the judges. It leaves out the simulator and the practice data, so nothing simulated reaches the submission. Download it from the final revision on Sunday and fill in the results in its README.</p>
+      <div class="fields">
+        <button class="ghost" id="dl-share" type="button">Code package (.zip)</button>
+      </div>
+      <p class="note" id="dl-note"></p>
+    </div>
+    <div class="panel">
+      <h3>Build kit contents</h3>
+      <ul class="tight">
+        <li><code>firmware/lam_flow_rig/</code>: <code>pio run -t upload</code> on core 2.0.17 (also builds on 3.1.3)</li>
+        <li><code>firmware/lam_flow_rig/lam_flow_rig.ino</code>: open it in the Arduino IDE with esp32 core 2.0.17, board "NodeMCU-32S". It compiles the same <code>src/main.cpp</code>, checked with arduino-cli.</li>
+        <li><code>tools/rig_console.py</code>: live trends, logging, commands, <code>SHOT</code> and automatic screenshots</li>
+        <li><code>tools/cal_fit.py</code>, <code>analyze_run.py</code>, <code>theory.py</code></li>
+        <li><code>print/</code>: tag labels, BV-02 dial, P&amp;ID; <code>templates/cal_runs.csv</code>; <code>README.md</code></li>
+        <li><code>tools/samples/simulated_take_*.csv</code>: a simulated full take for practising <code>--replay</code> and the plots. Practice only; never submit it.</li>
+        <li><code>firmware/lam_flow_rig/test/</code>: the software-in-the-loop simulator</li>
+      </ul>
+    </div>
+  </div>
+  <div class="panel">
+    <h3>Revision history</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Rev</th><th>Review run</th><th>Improvements</th></tr></thead>
+        <tbody>
+        <tr><td>A</td><td>–</td><td>First full plan: contract, ground truth, seven milestones, P&amp;ID, wiring, firmware and bench tools.</td></tr>
+        <tr><td>B</td><td>1 · engineering correctness</td><td>(1) LSL-03 becomes a probe at the dip-tube inlet, so the flush stops exactly when TK-03 can no longer feed P-03 (the wall foil stopped with water still visible). A late BV-01 now re-prompts instead of ending the flush. (2) P-02 protective trips act only on true no-flow; partial patterns only raise an event, so noise cannot stop P-02 on camera. (3) The console no longer reboots the ESP32 when it connects. (4) The simulator showed that a 1.0 L sump start never trips LS-01 on the 0.8 L pour: the sump now starts 0.2 L below the trip, and the planner checks it. (5) A software-in-the-loop simulator runs the real firmware through 5 scenarios, all passing. Also: SOV-01 is confirmed direct-acting from its label; an M1 float-jumper note; P-03 duty set so the tee stays below atmospheric.</td></tr>
+        <tr><td>C</td><td>2 · execution realism</td><td>(1) The required Q1.2 and Q2.1 data moved from optional M6 into M3, straight after calibration, and the third M5 pass is filmed as a backup take by Sat 22:00. (2) A fitting map checks every joint against the exact kit counts: all 8 male push-fits are used, so 4 spares are ordered tonight, and FT-01's 7 mm barbs need the tube softened in hot water. (3) A first-water procedure: fill by weight, then prime P-02, P-01 and P-03 in that order and bleed the meter. (4) A reset procedure (about 6 min) and a single-take run script with roles, cues, forbidden actions and abort rules. The console now shows Case 1 and Case 2 elapsed time for the pour cue. (5) A laptop readiness checklist, plus a simulated full take in the kit to practise the console and plots on.</td></tr>
+        <tr><td>D</td><td>3 · what the judges reward</td><td>(1) A ‘How we place top 3’ sheet built on the round's own wording: real data, characterisation, calculations, plots, interpretation, and no simulations. It covers where points are won and lost, the judges' vocabulary, and Grand Finale readiness. (2) A requirements checklist traces every line of the paper to its evidence, including ‘Share the code’, which the plan had missed. (3) Evidence-grade outputs: a one-page FT-01 calibration certificate, and trend plots with shaded phases and labelled events. (4) A decision log ties each design choice to the measured data behind it, plus ready-to-fill Q2.1/Q2.2/Q2.3 interpretation sentences, and the P&amp;ID now notes BV-02 as the throttling valve in place of the absent needle valve. (5) The video is re-cut around the problem statement's five verbs, with a caption for every number. The simulator stays a firmware test tool and never appears as evidence.</td></tr>
+        <tr><td>E</td><td>team split · Friday start</td><td>(1) Sheet 02 now opens with four role cards (HY, EF, DC, IV): what each person owns in this book, their milestones, and first steps they tick off, shared with the team. The schedule starts Fri 08:00 and M1 moves to 10:00. (2) A ready-to-send organiser message and a buy-today parts list: pneumatic push-fits (PC 8-02, not RO fittings), PTFE tape, ties, a flyback diode, a drip tray, and spare ESP32, IBT-2 and YF-S401 as insurance. The pressure transducer is dropped. (3) A shared bench log on sheet 06 records what the hardware shows at M1–M5, so firmware and parameters can be tuned from real readings. (4) Software: an Arduino IDE sketch that compiles the same <code>src/main.cpp</code> (checked with arduino-cli on core 2.0.17); firmware 1.1 reports its version to the console; the console saves screenshots at the float event, the end of Case 1, the three-pump flush and the automatic stop, draws the 3.0 L/min target band, and logs the parameters of every run. (5) Printables that were referenced but missing: the BV-02 position dial and the tag and flow-arrow labels; plus a code package for the judges, without the simulator.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var fx = function (x, d) { return (x == null || !isFinite(x)) ? '–' : Number(x).toFixed(d == null ? 3 : d); };
+  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+
+  function toast(msg) {
+    var t = $('#toast');
+    t.textContent = msg;
+    t.classList.add('on');
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(function () { t.classList.remove('on'); }, 1800);
+  }
+  function local(key, val) {
+    try {
+      if (val === undefined) { var v = localStorage.getItem(key); return v ? JSON.parse(v) : null; }
+      localStorage.setItem(key, JSON.stringify(val));
+    } catch (e) { return null; }
+    return null;
+  }
+  function num(id) { var v = parseFloat($(id).value); return isFinite(v) ? v : NaN; }
+
+  /* countdown to Sun 4 Oct 2026 18:00 IST */
+  var CUTOFF = Date.UTC(2026, 9, 4, 12, 30, 0);
+  function tick() {
+    var c = $('#countdown');
+    var ms = CUTOFF - Date.now();
+    if (ms <= 0) { c.textContent = 'cutoff passed'; return; }
+    var d = Math.floor(ms / 864e5), h = Math.floor(ms % 864e5 / 36e5), m = Math.floor(ms % 36e5 / 6e4);
+    c.textContent = d + ' d ' + h + ' h ' + m + ' min';
+  }
+  tick();
+  setInterval(tick, 20000);
+
+  /* copy buttons */
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-copy-from]');
+    if (!b) return;
+    var src = $(b.dataset.copyFrom);
+    var text = src ? src.textContent : '';
+    var fallback = function () {
+      var r = document.createRange(); r.selectNodeContents(src);
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      toast('Selected. Press Ctrl+C to copy.');
+    };
+    try { navigator.clipboard.writeText(text).then(function () { toast('Copied'); }, fallback); } catch (err) { fallback(); }
+  });
+
+  /* statistics */
+  var T975 = [NaN, 12.706, 4.303, 3.182, 2.776, 2.571, 2.447, 2.365, 2.306, 2.262, 2.228, 2.201, 2.179, 2.160, 2.145, 2.131, 2.120, 2.110, 2.101, 2.093, 2.086];
+  function t975(dof) { return dof <= 0 ? NaN : (dof < T975.length ? T975[dof] : 1.96 + 2.4 / dof); }
+  function linfit(xs, ys) {
+    var n = xs.length, xm = 0, ym = 0, sxx = 0, sxy = 0, syy = 0, ssr = 0, i;
+    for (i = 0; i < n; i++) { xm += xs[i]; ym += ys[i]; }
+    xm /= n; ym /= n;
+    for (i = 0; i < n; i++) { sxx += (xs[i] - xm) * (xs[i] - xm); sxy += (xs[i] - xm) * (ys[i] - ym); syy += (ys[i] - ym) * (ys[i] - ym); }
+    var a = sxy / sxx, b = ym - a * xm;
+    for (i = 0; i < n; i++) ssr += Math.pow(ys[i] - (a * xs[i] + b), 2);
+    var s = n > 2 ? Math.sqrt(ssr / (n - 2)) : NaN;
+    return { a: a, b: b, xm: xm, sxx: sxx, n: n, s: s, r2: syy > 0 ? 1 - ssr / syy : NaN, seA: s / Math.sqrt(sxx), seB: s * Math.sqrt(1 / n + xm * xm / sxx) };
+  }
+
+  /* small SVG chart */
+  function ticks(lo, hi, n) {
+    var span = (hi - lo) || 1, raw = span / (n || 5), mag = Math.pow(10, Math.floor(Math.log10(raw))), e = raw / mag;
+    var step = (e >= 7.5 ? 10 : e >= 3.5 ? 5 : e >= 1.5 ? 2 : 1) * mag, out = [];
+    for (var v = Math.ceil(lo / step) * step; v <= hi + step * 1e-6; v += step) out.push(+v.toFixed(10));
+    return out;
+  }
+  function drawChart(svg, o) {
+    var W = 560, H = 330, L = 58, R = 14, T = 14, B = 46, pw = W - L - R, ph = H - T - B;
+    var X = function (v) { return L + (v - o.xlo) / (o.xhi - o.xlo) * pw; };
+    var Y = function (v) { return T + ph - (v - o.ylo) / (o.yhi - o.ylo) * ph; };
+    var clip = function (v) { return Math.max(o.ylo, Math.min(o.yhi, v)); };
+    var g = '';
+    if (o.hband) g += '<rect class="okband" x="' + L + '" y="' + Y(o.hband[1]) + '" width="' + pw + '" height="' + (Y(o.hband[0]) - Y(o.hband[1])) + '"/>';
+    ticks(o.xlo, o.xhi).forEach(function (t) {
+      g += '<line class="grid" x1="' + X(t) + '" x2="' + X(t) + '" y1="' + T + '" y2="' + (T + ph) + '"/><text x="' + X(t) + '" y="' + (T + ph + 16) + '" text-anchor="middle">' + (+t.toPrecision(6)) + '</text>';
+    });
+    ticks(o.ylo, o.yhi).forEach(function (t) {
+      g += '<line class="grid" x1="' + L + '" x2="' + (L + pw) + '" y1="' + Y(t) + '" y2="' + Y(t) + '"/><text x="' + (L - 6) + '" y="' + (Y(t) + 4) + '" text-anchor="end">' + (+t.toPrecision(6)) + '</text>';
+    });
+    if (o.zero) g += '<line class="zero" x1="' + L + '" x2="' + (L + pw) + '" y1="' + Y(0) + '" y2="' + Y(0) + '"/>';
+    (o.bands || []).forEach(function (b) {
+      var top = b.map(function (p) { return X(p[0]) + ',' + Y(clip(p[2])); }).join(' ');
+      var bot = b.slice().reverse().map(function (p) { return X(p[0]) + ',' + Y(clip(p[1])); }).join(' ');
+      g += '<polygon class="band" points="' + top + ' ' + bot + '"/>';
+    });
+    (o.lines || []).forEach(function (ln) {
+      g += '<polyline class="' + ln.cls + '" points="' + ln.pts.map(function (p) { return X(p[0]) + ',' + Y(clip(p[1])); }).join(' ') + '"/>';
+    });
+    o.xs.forEach(function (x, i) { g += '<circle class="pt" cx="' + X(x) + '" cy="' + Y(clip(o.ys[i])) + '" r="4.5"/>'; });
+    g += '<line class="axis" x1="' + L + '" x2="' + (L + pw) + '" y1="' + (T + ph) + '" y2="' + (T + ph) + '"/><line class="axis" x1="' + L + '" x2="' + L + '" y1="' + T + '" y2="' + (T + ph) + '"/>';
+    g += '<text x="' + (L + pw / 2) + '" y="' + (H - 8) + '" text-anchor="middle">' + o.xlab + '</text>';
+    g += '<text x="14" y="' + (T + ph / 2) + '" text-anchor="middle" transform="rotate(-90 14 ' + (T + ph / 2) + ')">' + o.ylab + '</text>';
+    svg.innerHTML = g;
+  }
+
+  /* ---------------- capabilities ---------------- */
+  var caps = { db: null, user: null, downloads: null, uid: null };
+  var ready = (window.claude && window.claude.use) ? Promise.all([
+    window.claude.use('db').catch(function () { return null; }),
+    window.claude.use('user').catch(function () { return null; }),
+    window.claude.use('downloads').catch(function () { return null; })
+  ]) : Promise.resolve([null, null, null]);
+
+  async function names(ids) {
+    if (!caps.user || !ids.length) return {};
+    try { return await caps.user.profiles(ids); } catch (e) { return {}; }
+  }
+  function hhmm(ms) { var d = new Date(ms); return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2); }
+
+  /* ---------------- calibration workbench ---------------- */
+  var EXAMPLE = [[8329, 90, 1500], [8352, 90, 1501], [8333, 90, 1498], [11115, 60, 1989], [11170, 60, 2000], [11091, 60, 1983],
+    [16708, 60, 2981], [16832, 60, 3002], [16667, 60, 2973], [16678, 45, 2988], [16693, 45, 2984], [16846, 45, 3008],
+    [17883, 40, 3200], [18042, 40, 3219], [18031, 40, 3217]].map(function (r, i) { return { id: 'ex' + i, pulses: r[0], time_s: r[1], mass_g: r[2], example: true }; });
+  var cal = { runs: [], mode: 'local', del: null };
+
+  function calData() {
+    var rho = num('#cal-rho') || 1000;
+    var rows = (cal.runs.length ? cal.runs : EXAMPLE).map(function (r) {
+      var o = Object.assign({}, r);
+      o.f = r.pulses / r.time_s;
+      if (r.mass_g > 0) { o.V = r.mass_g / rho; o.Q = o.V / r.time_s * 60; o.K = r.pulses / o.V; }
+      return o;
+    });
+    var good = rows.filter(function (r) { return r.Q > 0; });
+    var fit = good.length >= 2 ? linfit(good.map(function (r) { return r.f; }), good.map(function (r) { return r.Q; })) : null;
+    if (fit) rows.forEach(function (r) { if (r.Q > 0) { r.Qf = fit.a * r.f + fit.b; r.err = (r.Qf - r.Q) / r.Q * 100; } });
+    return { rows: rows, good: good, fit: fit, example: !cal.runs.length };
+  }
+
+  function renderCal() {
+    var d = calData();
+    $('#cal-example').hidden = !d.example;
+    var tb = $('#cal-rows');
+    tb.innerHTML = '';
+    d.rows.forEach(function (r, i) {
+      var tr = document.createElement('tr');
+      var massCell = r.example ? fx(r.mass_g, 0)
+        : '<input type="number" class="narrow" step="1" min="0" aria-label="Net mass, run ' + (i + 1) + '" data-mass="' + esc(r.id) + '" value="' + (r.mass_g > 0 ? r.mass_g : '') + '">';
+      var act = r.example ? '' : (cal.del === r.id
+        ? '<button class="ghost" data-delok="' + esc(r.id) + '" type="button">Confirm delete</button>'
+        : '<button class="ghost" data-del="' + esc(r.id) + '" type="button">Delete</button>');
+      tr.innerHTML = '<td>' + (i + 1) + (r.note ? ' <span class="muted small">' + esc(r.note) + '</span>' : '') + '</td>' +
+        '<td class="num">' + fx(r.pulses, 0) + '</td><td class="num">' + fx(r.time_s, 3) + '</td><td class="num">' + fx(r.f, 2) + '</td>' +
+        '<td class="num">' + massCell + '</td><td class="num">' + fx(r.V, 4) + '</td><td class="num">' + fx(r.Q, 3) + '</td>' +
+        '<td class="num">' + fx(r.Qf, 3) + '</td><td class="num">' + (r.err == null ? '–' : (r.err >= 0 ? '+' : '') + fx(r.err, 2)) + '</td>' +
+        '<td class="num">' + fx(r.K, 0) + '</td><td>' + act + '</td>';
+      tb.appendChild(tr);
+    });
+    if (!d.rows.length) tb.innerHTML = '<tr><td colspan="11" class="muted">No runs yet. Run CAL on the console, then add pulses, time and the weighed mass here.</td></tr>';
+
+    var out = $('#cal-out'), f = d.fit;
+    if (!f || d.good.length < 3) {
+      out.innerHTML = '<div class="kv"><div class="k">Status</div><div class="v"><small>Need three or more weighed runs</small></div></div>';
+      $('#cal-cmds').textContent = 'Add three or more weighed runs to get the SET commands.';
+      $('#cal-chart').innerHTML = '';
+      $('#cal-resid').innerHTML = '';
+      return;
+    }
+    var errs = d.good.map(function (r) { return Math.abs(r.err); });
+    var Ks = d.good.map(function (r) { return r.K; });
+    var Km = Ks.reduce(function (a, b) { return a + b; }, 0) / Ks.length;
+    var Ksd = Math.sqrt(Ks.reduce(function (a, b) { return a + (b - Km) * (b - Km); }, 0) / Math.max(1, Ks.length - 1));
+    var f3 = (3 - f.b) / f.a;
+    var pi = t975(f.n - 2) * f.s * Math.sqrt(1 + 1 / f.n + Math.pow(f3 - f.xm, 2) / f.sxx);
+    var maxE = Math.max.apply(null, errs), avgE = errs.reduce(function (a, b) { return a + b; }, 0) / errs.length;
+    var pass = f.r2 >= 0.995 && maxE <= 3;
+    var kv = function (k, v, small) { return '<div class="kv"><div class="k">' + k + '</div><div class="v">' + v + (small ? ' <small>' + small + '</small>' : '') + '</div></div>'; };
+    out.innerHTML =
+      kv('R²', fx(f.r2, 5), pass ? '<span class="pill ok">meets M3</span>' : '<span class="pill warn">below target</span>') +
+      kv('a (L/min per Hz)', fx(f.a, 6), '± ' + fx(f.seA, 6)) +
+      kv('b (L/min)', (f.b >= 0 ? '+' : '') + fx(f.b, 4), '± ' + fx(f.seB, 4)) +
+      kv('Max error', fx(maxE, 2) + ' %') +
+      kv('Average error', fx(avgE, 2) + ' %') +
+      kv('K (pulses/L)', fx(Km, 0), '± ' + fx(Ksd, 0) + ' · ' + (Km / 5880 * 100 - 100 >= 0 ? '+' : '') + fx(Km / 5880 * 100 - 100, 1) + '% vs 5880') +
+      kv('At 3.00 L/min', '± ' + fx(pi, 3), 'L/min, 95% PI') +
+      kv('Runs used', d.good.length + '', d.example ? 'example data' : '');
+    var fcut = Math.max(3, 0.8 * (0.3 - f.b) / f.a);
+    $('#cal-cmds').textContent = d.example
+      ? 'Example data: no commands until your own runs are in.'
+      : 'SET a ' + f.a.toFixed(6) + '\nSET b ' + f.b.toFixed(5) + '\nSET fcut ' + fcut.toFixed(1) + '\nSAVE';
+
+    var xs = d.good.map(function (r) { return r.f; }), ys = d.good.map(function (r) { return r.Q; });
+    var xhi = Math.max.apply(null, xs) * 1.08, yhi = Math.max.apply(null, ys) * 1.12;
+    var line = [], band = [], dsl = [];
+    for (var k = 0; k <= 40; k++) {
+      var x = xhi * k / 40, yv = f.a * x + f.b, w = t975(f.n - 2) * f.s * Math.sqrt(1 + 1 / f.n + Math.pow(x - f.xm, 2) / f.sxx);
+      line.push([x, yv]); band.push([x, yv - w, yv + w]); dsl.push([x, x / 98]);
+    }
+    drawChart($('#cal-chart'), { xs: xs, ys: ys, xlo: 0, xhi: xhi, ylo: 0, yhi: yhi, xlab: 'FT-01 frequency f (Hz)', ylab: 'actual flow Q (L/min)', lines: [{ cls: 'ds', pts: dsl }, { cls: 'fit', pts: line }], bands: [band] });
+    var es = d.good.map(function (r) { return r.err; });
+    var emax = Math.max(2.5, Math.max.apply(null, es.map(Math.abs)) * 1.2);
+    drawChart($('#cal-resid'), { xs: ys, ys: es, xlo: 0, xhi: yhi, ylo: -emax, yhi: emax, xlab: 'actual flow Q (L/min)', ylab: 'fit error (%)', hband: [-2, 2], zero: true, lines: [] });
+  }
+
+  function saveLocalRuns() { if (cal.mode === 'local') local('hh-cal-runs', cal.runs); }
+  async function addRun(r) {
+    r.at = Date.now();
+    if (caps.uid) r.by = caps.uid;
+    if (cal.mode === 'db') {
+      try { await caps.db.collection('cal_runs').add(r); } catch (e) { toast('Could not save the run: ' + (e && e.code || 'error')); }
+    } else {
+      r.id = 'l' + r.at + Math.floor(Math.random() * 1e4);
+      cal.runs.push(r); saveLocalRuns(); renderCal();
+    }
+  }
+  $('#cal-add').addEventListener('click', function () {
+    var p = num('#cal-pulses'), t = num('#cal-time');
+    if (!(p > 0 && t > 0)) { toast('Enter pulses and time first'); return; }
+    var m = num('#cal-mass');
+    var r = { pulses: p, time_s: t, mass_g: m > 0 ? m : null, duty: num('#cal-duty') || null, note: $('#cal-note').value.trim().slice(0, 40) };
+    addRun(r).then(function () { ['#cal-pulses', '#cal-time', '#cal-mass', '#cal-note'].forEach(function (s) { $(s).value = ''; }); });
+  });
+  $('#cal-paste-go').addEventListener('click', async function () {
+    var lines = $('#cal-paste').value.split(/\r?\n/), n = 0;
+    for (var i = 0; i < lines.length; i++) {
+      var p = lines[i].trim().split(',');
+      if (p[0] !== 'C' || p.length < 7) continue;
+      var pulses = parseFloat(p[3]), t = parseFloat(p[4]);
+      if (pulses > 0 && t > 0) { await addRun({ pulses: pulses, time_s: t, mass_g: null, duty: Math.round(parseFloat(p[6]) * 100) || null, note: 'run ' + p[2] }); n++; }
+    }
+    $('#cal-paste').value = '';
+    toast(n ? n + ' run(s) added. Enter each mass when weighed.' : 'No C,… lines found');
+  });
+  $('#cal-rows').addEventListener('change', async function (e) {
+    var id = e.target.dataset.mass;
+    if (!id) return;
+    var m = parseFloat(e.target.value);
+    var val = m > 0 ? m : null;
+    if (cal.mode === 'db') {
+      try { await caps.db.collection('cal_runs').doc(id).update({ mass_g: val }); } catch (err) { toast('Could not save the mass'); }
+    } else {
+      cal.runs.forEach(function (r) { if (r.id === id) r.mass_g = val; }); saveLocalRuns(); renderCal();
+    }
+  });
+  $('#cal-rows').addEventListener('click', async function (e) {
+    var b = e.target.closest('button');
+    if (!b) return;
+    if (b.dataset.del) { cal.del = b.dataset.del; renderCal(); return; }
+    if (b.dataset.delok) {
+      var id = b.dataset.delok; cal.del = null;
+      if (cal.mode === 'db') { try { await caps.db.collection('cal_runs').doc(id).delete(); } catch (err) { toast('Could not delete'); } }
+      else { cal.runs = cal.runs.filter(function (r) { return r.id !== id; }); saveLocalRuns(); renderCal(); }
+    }
+  });
+  $('#cal-rho').addEventListener('input', renderCal);
+  $('#cal-csv').addEventListener('click', async function () {
+    var d = calData();
+    if (d.example) { toast('Nothing to export yet'); return; }
+    var csv = 'run,pulses,time_s,f_hz,mass_g,volume_l,q_actual_lpm,q_fit_lpm,error_pct,k_pulses_per_l,duty_pct,note\n' + d.rows.map(function (r, i) {
+      return [i + 1, r.pulses, r.time_s, fx(r.f, 3), r.mass_g || '', r.V ? r.V.toFixed(4) : '', r.Q ? r.Q.toFixed(4) : '', r.Qf ? r.Qf.toFixed(4) : '', r.err != null ? r.err.toFixed(3) : '', r.K ? r.K.toFixed(1) : '', r.duty || '', '"' + String(r.note || '').replace(/"/g, "'") + '"'].join(',');
+    }).join('\n') + '\n';
+    if (!caps.downloads) { $('#cal-csv-note').textContent = 'Downloads are not available in this view.'; return; }
+    try { await caps.downloads.save({ filename: 'ft01_calibration_runs.csv', data: csv }); toast('Saved'); }
+    catch (err) { if (err && err.code !== 'declined') $('#cal-csv-note').textContent = 'Could not save the file (' + (err.code || 'error') + ').'; }
+  });
+
+  /* ---------------- checklists ---------------- */
+  var CHECKS = [{"title": "Requirements coverage (every line of the paper)", "items": [["rq-pid", "Q1.1 labelled P&amp;ID: pumps, throttling valve (BV-02), FT-01, flow direction, tanks, sump, tube sizes, measurement points (page 4 and video 0:30)"], ["rq-c1path", "Case 1 path exactly as specified: TK-01 → on/off valve → P-01 → sump → P-02 → FT-01 → TK-01 (single take)"], ["rq-duties", "P-01 at 50% and P-02 at 100%, or the raised P-01 duty explained with the measured data (decision log)"], ["rq-cal", "FT-01 calibrated and shown (certificate; Q2.2)"], ["rq-pour", "External fluid into the sump: P-01 stops, P-02 keeps running, P-01 restarts by itself (single take)"], ["rq-trend", "Flow against time in mL/s, total litres returned to TK-01, and screenshots in L/min"], ["rq-code", "Code shared: repository or drive link in the submission"], ["rq-switch", "Case 1 started with the on/off switch, on camera"], ["rq-tee", "Case 2 flush through the equal tee, with the on/off valve shut to isolate TK-01"], ["rq-bv01", "BV-01 opened before P-03 starts, and it is the only manual action"], ["rq-3pumps", "All three pumps running together during the flush (console duties visible)"], ["rq-onego", "Case 1 and Case 2 in a single go, with no other intervention"], ["rq-stop", "System stops as soon as the flush tank finishes (event latency read out)"], ["rq-video", "Video 10–15 min: every component identified, flow direction spoken, both cases shown"], ["rq-photos", "Photographs of the completed setup with components identified"], ["rq-finalpid", "Final P&amp;ID block diagram submitted"], ["rq-q12", "Q1.2: runs at about 1, 3 and 6 L/min (or the measured maximum) compared with the theoretical velocity"], ["rq-q21", "Q2.1: flow at BV-02 25/50/70(75)/100%, table and graph"], ["rq-q22", "Q2.2: R², a, b, maximum and average calibration error"], ["rq-q23", "Q2.3: at least 5 flow conditions with pulses, time, frequency, volume and actual flow"], ["rq-q31", "Q3.1: residence time calculated, plus the four sub-answers"], ["rq-q32", "Q3.2: conditions A–E diagnosed; the hardest case and the extra information needed"], ["rq-p2", "Page 2 bullets: commissioned, characterised, FT-01 on the DAQ, valve effect analysed against time, 3 L/min held, graphs justify decisions"], ["rq-ids", "Team ID and team name on every page"]]}, {"title": "Laptop readiness (tonight, every laptop)", "items": [["lp-driver", "USB driver installed (CP210x or CH340); the ESP32 shows up as a COM port"], ["lp-python", "Python 3.10+ and <code>pip install -r tools/requirements.txt</code> done"], ["lp-replay", "<code>rig_console.py --replay tools/samples/simulated_take_telemetry.csv</code> plays the simulated practice take"], ["lp-ide", "Arduino IDE 2 with esp32 core 2.0.17 (Boards Manager, pick that version), board NodeMCU-32S; hold BOOT if upload stalls at “Connecting”"], ["lp-port", "Only one program holds the COM port: close the Serial Monitor before starting the console"], ["lp-power", "Sleep and screen saver off, charger in, notifications muted"], ["lp-obs", "OBS scene ready: camera plus the console window, test-recorded for 1 min"]]}, {"title": "Power-off check (kit sheet)", "items": [["po-smps", "SMPS input wiring checked; PE bonded; terminal cover on"], ["po-mains", "No mains anywhere near the PCB"], ["po-pol", "12 V polarity at the PCB input checked with the DMM"], ["po-fuse", "Fuse F3 rating read and ≥ 15 A"], ["po-drv", "IBT-2 harness checked: GND, EN, PWM; VCC fed from 3V3"], ["po-sov", "D4184 wiring checked; flyback diode across the SOV coil"], ["po-ft", "FT-01 wiring and divider checked; signal ≤ 3.3 V"], ["po-float", "Float switch wiring checked; open = high"], ["po-gnd", "Common 0 V between the PCB and every IBT-2"], ["po-short", "No exposed conductors; loose wires tied; PCB in the drip tray on a raised board"]]}, {"title": "M1 bench bring-up", "items": [["m1-float", "LS-01 connected (or FSW jumpered to GND) before any pump test: an open float input blocks P-01 and P-03"], ["m1-pins", "<code>PINS</code>: switch, float, ZSO and FT read correctly (G34 and G35 confirmed)"], ["m1-spin", "Each pump spins at 30%, pumping from IN to OUT"], ["m1-stagger", "Three pumps started together: no ESP32 reset"], ["m1-is", "IS gains g1–g3 calibrated against the DMM and saved"], ["m1-ft", "FT-01 output scoped; clean edges at G14; glitch count flat with pumps on"], ["m1-p1", "P-01 duty table filled in; d1 chosen and saved"], ["m1-touch", "LSL-03 probe reads clearly different in water and out of water (<code>PINS</code>)"]]}, {"title": "M2 hydraulic commissioning", "items": [["m2-tags", "Every component tagged; flow arrows on every line"], ["m2-dip", "Dip tubes clipped at the rims and weighted"], ["m2-spool", "FT-01 horizontal, arrow along the flow, straight runs in place"], ["m2-leak1", "10 min at 3 L/min: no wet tissue anywhere"], ["m2-leak2", "2 min at BV-02 25%: no wet tissue anywhere"], ["m2-air", "No bubbles visible in the FT-01 spool"], ["m2-trip", "LS-01 trip volume measured on the scale"], ["m2-max", "Maximum loop flow recorded (duty map at 100%, BV-02 open)"]]}, {"title": "M3 calibration", "items": [["m3-freeze", "FT-01 spool frozen: nothing moves near it from here"], ["m3-runs", "15 weighed runs entered in the workbench"], ["m3-r2", "R² ≥ 0.995 and maximum error ≤ 3%"], ["m3-set", "SET a, b, fcut, then SAVE"], ["m3-verify", "Verification run at 3 L/min within ±2% of the scale"]]}, {"title": "M4 and M5 acceptance", "items": [["m4-r1", "Case 1 pass 1 (pour → P-01 stop ≤ 1.5 s → restart)"], ["m4-r2", "Case 1 pass 2"], ["m4-r3", "Case 1 pass 3"], ["m5-touch", "<code>TOUCHCAL EMPTY</code> done with the probe dry; i3dry set midway between wet and dry"], ["m5-r1", "Case 1 → Case 2 single go, pass 1"], ["m5-r2", "Single go, pass 2"], ["m5-r3", "Single go, pass 3; detection latency ≤ 1.0 s in the log"]]}, {"title": "M7 submission", "items": [["m7-reh", "Three rehearsals done"], ["m7-take", "Single take recorded, with the console capture"], ["m7-video", "Edited video 10–15 min, every component named, flow direction spoken"], ["m7-photos", "Photos annotated with P&amp;ID tags"], ["m7-pid", "Final P&amp;ID drawn on page 4 and exported"], ["m7-paper", "Every table and answer in the paper filled in with measured data"], ["m7-code", "Code package downloaded from the final revision (sheet 11), results filled in its README, link in the submission"], ["m7-check", "Second person checked everything against paper pages 1–3"], ["m7-up", "Uploaded by 16:00"]]}];
+  var chk = { state: {}, mode: 'local' };
+  function renderChecks() {
+    var host = $('#checks');
+    var ids = [];
+    Object.keys(chk.state).forEach(function (k) { if (chk.state[k] && chk.state[k].by) ids.push(chk.state[k].by); });
+    names(Array.from(new Set(ids))).then(function (ps) {
+      host.innerHTML = '';
+      CHECKS.forEach(function (g) {
+        var done = g.items.filter(function (it) { return chk.state[it[0]] && chk.state[it[0]].done; }).length;
+        var sec = document.createElement('div');
+        sec.className = 'cgroup';
+        var html = '<header><h3>' + g.title + '</h3><span class="mono small">' + done + '/' + g.items.length + '</span></header><div class="bar"><i style="width:' + (done / g.items.length * 100) + '%"></i></div>';
+        g.items.forEach(function (it) {
+          var s = chk.state[it[0]] || {};
+          var who = '';
+          if (s.done) {
+            var nm = s.by && ps[s.by] ? (ps[s.by].name || 'Someone') : (chk.mode === 'local' ? 'you' : 'Someone');
+            who = '<span class="who">' + esc(nm) + (s.at ? ' · ' + hhmm(s.at) : '') + '</span>';
+          }
+          html += '<div class="citem' + (s.done ? ' done' : '') + '"><input type="checkbox" id="c-' + it[0] + '" data-chk="' + it[0] + '"' + (s.done ? ' checked' : '') + '><label for="c-' + it[0] + '">' + it[1] + '</label>' + who + '</div>';
+        });
+        sec.innerHTML = html;
+        host.appendChild(sec);
+      });
+      document.querySelectorAll('#team [data-chk]').forEach(function (box) {
+        var s = chk.state[box.dataset.chk] || {};
+        var row = box.closest('.citem');
+        box.checked = !!s.done;
+        row.classList.toggle('done', !!s.done);
+        var nm = s.by && ps[s.by] ? (ps[s.by].name || 'Someone') : (chk.mode === 'local' ? 'you' : 'Someone');
+        row.querySelector('.who').textContent = s.done ? nm + (s.at ? ' · ' + hhmm(s.at) : '') : '';
+      });
+    });
+  }
+  async function onTick(e) {
+    var id = e.target.dataset.chk;
+    if (!id) return;
+    var rec = { done: e.target.checked, at: Date.now() };
+    if (caps.uid) rec.by = caps.uid;
+    if (chk.mode === 'db') {
+      try { await caps.db.collection('checks').doc(id).set(rec); }
+      catch (err) { e.target.checked = !e.target.checked; toast('Could not save the tick'); }
+    } else {
+      chk.state[id] = rec; local('hh-checks', chk.state); renderChecks();
+    }
+  }
+  $('#checks').addEventListener('change', onTick);
+  $('#team').addEventListener('change', onTick);
+
+  /* ---------------- role names and the bench log ---------------- */
+  var shared = { team: {}, bench: {}, mode: 'local' };
+  function renderShared() {
+    document.querySelectorAll('[data-role]').forEach(function (inp) {
+      var d = shared.team[inp.dataset.role];
+      if (document.activeElement !== inp) inp.value = d && d.name ? d.name : '';
+    });
+    var ids = [];
+    Object.keys(shared.bench).forEach(function (k) { if (shared.bench[k] && shared.bench[k].by) ids.push(shared.bench[k].by); });
+    names(Array.from(new Set(ids))).then(function (ps) {
+      document.querySelectorAll('[data-bench]').forEach(function (inp) {
+        var d = shared.bench[inp.dataset.bench];
+        if (document.activeElement !== inp) inp.value = d && d.value ? d.value : '';
+        var who = (d && d.value) ? ((d.by && ps[d.by] ? (ps[d.by].name || 'Someone') : (shared.mode === 'local' ? 'you' : 'Someone')) + (d.at ? ' · ' + hhmm(d.at) : '')) : '';
+        $('[data-bench-who="' + inp.dataset.bench + '"]').textContent = who;
+      });
+    });
+  }
+  async function saveShared(coll, id, rec) {
+    rec.at = Date.now();
+    if (caps.uid) rec.by = caps.uid;
+    if (shared.mode === 'db') {
+      try { await caps.db.collection(coll).doc(id).set(rec); } catch (err) { toast('Could not save: ' + (err && err.code || 'error')); }
+    } else {
+      shared[coll][id] = rec; local('hh-' + coll, shared[coll]); renderShared();
+    }
+  }
+  $('#team').addEventListener('change', function (e) {
+    var r = e.target.dataset.role;
+    if (r) saveShared('team', r, { name: e.target.value.trim().slice(0, 60) });
+  });
+  $('#bench').addEventListener('change', function (e) {
+    var b = e.target.dataset.bench;
+    if (b) saveShared('bench', b, { value: e.target.value.trim().slice(0, 300) });
+  });
+
+  /* ---------------- inventory planner ---------------- */
+  function renderInv() {
+    var tk1 = num('#inv-tk1'), s0 = num('#inv-s0'), trip = num('#inv-trip'), pour = num('#inv-pour'), flush = num('#inv-flush'), lines = num('#inv-lines'), min = num('#inv-min'), brim = num('#inv-brim');
+    var W = tk1 + s0;
+    var c1 = W - trip - lines, peak = trip + pour, endTyp = W + pour + flush - trip - lines, endWorst = W + pour + flush - 0.3 - lines;
+    var card = function (k, v, ok, why) { return '<div class="kv"><div class="k">' + k + '</div><div class="v">' + fx(v, 2) + ' <small>L</small></div><div class="small">' + (ok ? '<span class="pill ok">ok</span>' : '<span class="pill bad">' + why + '</span>') + '</div></div>'; };
+    $('#inv-out').innerHTML =
+      card('TK-01 during Case 1', c1, c1 >= min, 'add water to TK-01') +
+      card('Sump peak after pour', peak, peak <= 4.0, 'sump may overflow') +
+      '<div class="kv"><div class="k">Pour trips LS-01?</div><div class="v">' + (s0 + pour > trip + 0.1 ? 'yes' : 'no') + '</div><div class="small">' + (s0 + pour > trip + 0.1 ? '<span class="pill ok">ok</span>' : '<span class="pill bad">raise sump start or pour more</span>') + '</div></div>' +
+      card('TK-01 at end, typical', endTyp, endTyp <= brim - 0.5, 'start TK-01 lower') +
+      card('TK-01 at end, worst', endWorst, endWorst <= brim - 0.3, 'start TK-01 lower') +
+      '<div class="kv"><div class="k">Water to fill</div><div class="v">' + fx(W + flush, 2) + ' <small>L total</small></div><div class="small muted">TK-01 + sump + TK-03</div></div>';
+    local('hh-inv-v2', ['#inv-tk1', '#inv-s0', '#inv-trip', '#inv-pour', '#inv-flush', '#inv-lines', '#inv-min', '#inv-brim'].map(function (s) { return $(s).value; }));
+  }
+
+  /* ---------------- P-01 duty finder ---------------- */
+  var P1ROWS = 5;
+  function p1Init() {
+    var saved = local('hh-p1') || [];
+    var duties = [40, 50, 60, 70, 100], tb = $('#p1-rows');
+    for (var i = 0; i < P1ROWS; i++) {
+      var s = saved[i] || {};
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td><input type="number" class="narrow" id="p1d' + i + '" aria-label="Duty, row ' + (i + 1) + '" value="' + (s.d != null ? s.d : duties[i]) + '"></td>' +
+        '<td><input type="number" class="narrow" id="p1m' + i + '" aria-label="Mass, row ' + (i + 1) + '" value="' + (s.m != null ? s.m : '') + '" placeholder="g"></td>' +
+        '<td><input type="number" class="narrow" id="p1t' + i + '" aria-label="Time, row ' + (i + 1) + '" value="' + (s.t != null ? s.t : 30) + '"></td>' +
+        '<td class="num" id="p1q' + i + '">–</td>';
+      tb.appendChild(tr);
+    }
+  }
+  function renderP1() {
+    var pts = [], save = [];
+    for (var i = 0; i < P1ROWS; i++) {
+      var d = num('#p1d' + i), m = num('#p1m' + i), t = num('#p1t' + i);
+      save.push({ d: isFinite(d) ? d : null, m: isFinite(m) ? m : null, t: isFinite(t) ? t : null });
+      var q = (m > 0 && t > 0) ? m / 1000 / t * 60 : NaN;
+      $('#p1q' + i).textContent = fx(q, 3);
+      if (q > 0 && d > 0) pts.push([d, q]);
+    }
+    local('hh-p1', save);
+    var target = num('#p1-target'), margin = num('#p1-margin'), need = target * (1 + margin / 100);
+    var gpm = target / 3.785, dpBar = Math.pow(gpm / 0.23, 2) * 0.0689;
+    var html = '<div class="kv"><div class="k">P-01 must supply</div><div class="v">' + fx(need, 2) + ' <small>L/min</small></div></div>' +
+      '<div class="kv"><div class="k">SOV-01 drop at ' + fx(target, 1) + ' L/min</div><div class="v">' + fx(dpBar, 2) + ' <small>bar (Cv 0.23)</small></div></div>';
+    if (pts.length >= 2) {
+      var fit = linfit(pts.map(function (p) { return p[0]; }), pts.map(function (p) { return p[1]; }));
+      var duty = (need - fit.b) / fit.a, q50 = fit.a * 50 + fit.b;
+      var reach = duty <= 100;
+      html += '<div class="kv"><div class="k">At 50% duty</div><div class="v">' + fx(q50, 2) + ' <small>L/min</small></div><div class="small">' + (q50 >= need ? '<span class="pill ok">spec duty works</span>' : '<span class="pill warn">raise d1</span>') + '</div></div>' +
+        '<div class="kv"><div class="k">Duty for ' + fx(need, 2) + ' L/min</div><div class="v">' + (reach ? fx(Math.max(duty, 0), 0) + ' %' : 'over 100%') + '</div><div class="small">' + (reach ? '' : '<span class="pill bad">replan: see sheet 10</span>') + '</div></div>';
+      var d1 = q50 >= need ? 0.5 : Math.min(1, Math.ceil(duty) / 100);
+      $('#p1-cmd').textContent = reach ? 'SET d1 ' + d1.toFixed(2) + '\nSET d1f ' + d1.toFixed(2) + '\nSAVE' : 'P-01 cannot reach the target. Raise TK-01, shorten L-101, then re-test.';
+    } else {
+      $('#p1-cmd').textContent = 'Enter at least two duties.';
+    }
+    $('#p1-out').innerHTML = html;
+  }
+
+  /* ---------------- Q1.2 velocity ---------------- */
+  function flowRow(qLpm, dMm) {
+    var q = qLpm / 60000, d = dMm / 1000, A = Math.PI * d * d / 4, v = q / A, re = 1000 * v * d / 1e-3;
+    var f = re < 2300 ? 64 / re : 0.316 * Math.pow(re, -0.25);
+    return { v: v, re: re, regime: re < 2300 ? 'laminar' : re < 4000 ? 'transitional' : re < 6000 ? 'turbulent, near transition' : 'turbulent', dp: f * 1000 * v * v / (2 * d) / 1000, tt: 1 / v };
+  }
+  function renderVel() {
+    var nom = num('#v-nom'), id = num('#v-id');
+    var targets = [[1, '#v-q1'], [3, '#v-q3'], [6, '#v-q6']];
+    $('#v-rows').innerHTML = targets.map(function (t) {
+      var ach = num(t[1]), q = ach > 0 ? ach : t[0];
+      var a = flowRow(t[0], nom), b = flowRow(q, id);
+      return '<tr><td>' + t[0] + ' L/min' + (ach > 0 ? ' <span class="muted small">(achieved ' + fx(ach, 2) + ')</span>' : '') + '</td><td class="num">' + fx(a.v, 3) + '</td><td class="num">' + Math.round(a.re).toLocaleString() + '</td><td class="num">' + fx(b.v, 3) + '</td><td class="num">' + Math.round(b.re).toLocaleString() + '</td><td>' + b.regime + '</td><td class="num">' + fx(b.dp, 1) + '</td><td class="num">' + fx(b.tt, 2) + '</td></tr>';
+    }).join('');
+    local('hh-vel', ['#v-nom', '#v-id', '#v-q1', '#v-q3', '#v-q6'].map(function (s) { return $(s).value; }));
+  }
+
+  /* ---------------- Q3.1 residence ---------------- */
+  function renderRes() {
+    var V = num('#r-v'), Q = num('#r-q'), tau = V / Q * 60;
+    var kv = function (k, v, u) { return '<div class="kv"><div class="k">' + k + '</div><div class="v">' + v + ' <small>' + u + '</small></div></div>'; };
+    $('#r-out').innerHTML = kv('τ = V/Q', fx(tau, 1), 's') + kv('V doubled', fx(tau * 2, 1), 's') + kv('Q doubled', fx(tau / 2, 1), 's') + kv('Turnover Q/V', fx(Q / V, 2), 'per min');
+    var s = num('#r-sump'), fl = num('#r-flush');
+    $('#r-wash').innerHTML = kv('Sump residence at Q', fx(s / Q * 60, 0), 's') + kv('Original fluid left', fx(Math.exp(-fl / s) * 100, 0), '% after flush');
+  }
+
+  /* ---------------- diagnoser ---------------- */
+  var DX = {
+    off_zero: ['Normal: pump off (Condition D)', 'If the pump was commanded on, check the driver enable, the fuse and the motor current.'],
+    off_pulses: ['SPURIOUS_PULSES', 'Siphoning through the pump, or interference on the pulse line. Check whether the return line drains back, and route the sensor lead away from the motor wires.'],
+    normal_normal: ['NORMAL (Condition A)', 'Nothing to do.'],
+    normal_high: ['Running against higher pressure', 'BV-02 is partly closed or the outlet is restricted. Flow still holds because the pump is positive-displacement.'],
+    normal_low: ['Early loss of suction', 'Sump level is low or air is getting in at a suction joint. Watch for bubbles in L-201.'],
+    normal_zero: ['Current-sense fault', 'The flow is real, so check the IS wiring and the gain.'],
+    normal_fluct: ['Watch: air entrainment starting', 'Check the sump level and the dip-tube depth.'],
+    reduced_high: ['RESTRICTION (Condition B)', 'Valve partly closed, a kink, or a partial blockage. Open BV-02 and see if the flow recovers.'],
+    reduced_low: ['Partial loss of suction', 'Air leak on the suction side, low sump, or BV-03 partly closed.'],
+    reduced_normal: ['FT-01 suspect', 'The pump load is normal while the flow reads low. Check the pulse duty (~50%), the sensor supply and the connector.'],
+    reduced_fluct: ['UNSTABLE_FLOW', 'Air drawn in or cavitation. Check the sump level and the suction joints.'],
+    zero_high: ['DISCHARGE_BLOCKED (Condition C)', 'Closed valve or blocked outlet; the pressure switch is cycling. Firmware trips P-02 after 3 s.'],
+    zero_low: ['SUCTION_LOSS (Condition C)', 'Dry sump, air lock, or BV-03 shut. Firmware trips after 5 s and retries.'],
+    zero_zero: ['PUMP_FAILURE (Condition C or D)', 'Motor, driver, fuse or wiring. Check 12 V at the IBT-2 B+ terminal and the EN lines.'],
+    zero_normal: ['FT01_SIGNAL_FAILURE (Condition C)', 'The pump is loaded normally, so fluid is moving. Check the sensor wiring, its 5 V supply and the divider.'],
+    zero_fluct: ['DISCHARGE_BLOCKED, pressure switch cycling', 'Open the outlet. The pump is dead-heading against its 8.25 bar switch.'],
+    intermittent_fluct: ['UNSTABLE_FLOW (Condition E)', 'Air entrainment, cavitation or pressure-switch cycling. Raise the sump level and check the suction joints.'],
+    intermittent_normal: ['FT01_INTERMITTENT (Condition E)', 'The pump load is steady, so the signal is at fault: a loose connector or interference.'],
+    intermittent_high: ['Pressure switch cycling near dead-head (Condition E)', 'Open BV-02.'],
+    intermittent_low: ['Air entrainment, low sump (Condition E)', 'Raise the sump level and check the dip tube.'],
+    intermittent_zero: ['Pump cutting in and out', 'Check the motor leads and the driver enable.']
+  };
+  var UNKNOWN = {
+    zero: ['NO_FLOW_CAUSE_UNKNOWN (Condition C)', 'FT-01 alone cannot separate these: blocked line, dry or air-locked pump, failed pump, failed sensor. Measure pump current, look at the tubing, check the sump level.'],
+    reduced: ['Condition B: likely a valve restriction', 'Confirm with pump current (it should rise) or by reopening BV-02.'],
+    intermittent: ['Condition E: unstable flow or an intermittent signal', 'Pump current separates them: fluctuating current means hydraulic; steady current means sensor.'],
+    normal: ['NORMAL (Condition A)', 'Nothing to do.']
+  };
+  function renderDx() {
+    var p = $('#dg-pump').value, pu = $('#dg-pulse').value, c = $('#dg-cur').value, r;
+    if (p === 'off') r = pu === 'zero' ? DX.off_zero : DX.off_pulses;
+    else if (c === 'unknown') r = UNKNOWN[pu];
+    else r = DX[pu + '_' + c] || ['No rule', 'Combination not covered.'];
+    $('#dg-out').innerHTML = '<h3>' + esc(r[0]) + '</h3><p>' + esc(r[1]) + '</p>';
+  }
+
+  /* ---------------- downloads ---------------- */
+  async function saveFile(filename, data) {
+    var note = $('#dl-note');
+    if (!caps.downloads) { note.textContent = 'Downloads are not available in this view.'; return; }
+    try { await caps.downloads.save({ filename: filename, data: data }); note.textContent = 'Saved ' + filename + '.'; }
+    catch (err) { if (!err || err.code !== 'declined') note.textContent = 'Could not save ' + filename + ' (' + (err && err.code || 'error') + ').'; }
+  }
+  async function packZip(manifestPath, filename) {
+    var note = $('#dl-note');
+    if (!caps.downloads) { note.textContent = 'Downloads are not available in this view.'; return; }
+    if (!window.JSZip) { note.textContent = 'The zip library did not load. Reload the page and try again.'; return; }
+    note.textContent = 'Packing ' + filename + '...';
+    try {
+      var manifest = await (await fetch(manifestPath)).json();
+      var zip = new window.JSZip(), cache = {};
+      for (var arc in manifest) {
+        var pub = manifest[arc];
+        if (!cache[pub]) { var r = await fetch(pub); if (!r.ok) throw { code: 'missing ' + pub }; cache[pub] = await r.text(); }
+        zip.file(arc, cache[pub]);
+      }
+      var blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
+      note.textContent = '';
+      await saveFile(filename, blob);
+    } catch (err) { note.textContent = 'Could not pack ' + filename + ' (' + (err && err.code || 'error') + ').'; }
+  }
+  $('#dl-kit').addEventListener('click', function () { packZip('kit/manifest.json', 'hh-build-kit.zip'); });
+  $('#dl-share').addEventListener('click', function () { packZip('kit/share_manifest.json', 'lam-flow-rig-code.zip'); });
+  [['#dl-pid', 'kit/pid.svg', 'hh-pid.svg'], ['#dl-labels', 'kit/tag_labels.svg', 'hh-tag-labels.svg'],
+    ['#dl-dial', 'kit/bv02_dial.svg', 'hh-bv02-dial.svg']].forEach(function (d) {
+    $(d[0]).addEventListener('click', async function () {
+      try { var r = await fetch(d[1]); if (!r.ok) throw r; await saveFile(d[2], await r.text()); }
+      catch (err) { $('#dl-note').textContent = 'Could not load ' + d[2] + '.'; }
+    });
+  });
+
+  /* ---------------- boot ---------------- */
+  (function restore() {
+    var inv = local('hh-inv-v2');
+    if (inv) ['#inv-tk1', '#inv-s0', '#inv-trip', '#inv-pour', '#inv-flush', '#inv-lines', '#inv-min', '#inv-brim'].forEach(function (s, i) { if (inv[i] !== '' && inv[i] != null) $(s).value = inv[i]; });
+    var vel = local('hh-vel');
+    if (vel) ['#v-nom', '#v-id', '#v-q1', '#v-q3', '#v-q6'].forEach(function (s, i) { if (vel[i] != null) $(s).value = vel[i]; });
+  })();
+  p1Init();
+  ['#inventory', '#p1duty', '#velocity', '#residence'].forEach(function (s) { $(s).addEventListener('input', function () { renderInv(); renderP1(); renderVel(); renderRes(); }); });
+  ['#dg-pump', '#dg-pulse', '#dg-cur'].forEach(function (s) { $(s).addEventListener('change', renderDx); });
+  renderInv(); renderP1(); renderVel(); renderRes(); renderDx();
+
+  cal.runs = local('hh-cal-runs') || [];
+  chk.state = local('hh-checks') || {};
+  shared.team = local('hh-team') || {};
+  shared.bench = local('hh-bench') || {};
+  renderCal();
+  renderChecks();
+  renderShared();
+
+  ready.then(async function (res) {
+    caps.db = res[0]; caps.user = res[1]; caps.downloads = res[2];
+    if (!caps.downloads) { $('#dl-note').textContent = 'Downloads are not available in this view.'; }
+    if (caps.user) { try { caps.uid = await caps.user.id(); } catch (e) { caps.uid = null; } }
+    if (!caps.db) {
+      $('#cal-sync').textContent = 'Saved in this browser only (shared storage is not available in this view).';
+      $('#chk-mode').textContent = 'Ticks are saved in this browser only, because shared storage is not available in this view.';
+      $('#bench-mode').textContent = 'Saved in this browser only (shared storage is not available in this view).';
+      return;
+    }
+    cal.mode = 'db'; chk.mode = 'db'; shared.mode = 'db';
+    $('#bench-mode').textContent = 'Shared: every teammate sees each entry live, with who entered it and when.';
+    ['team', 'bench'].forEach(function (coll) {
+      caps.db.collection(coll).onSnapshot(function (snap) {
+        var st = {};
+        snap.docs.forEach(function (d) { st[d.id] = d.data(); });
+        shared[coll] = st;
+        renderShared();
+      }, function () { $('#bench-mode').textContent = 'Lost the connection to shared storage. Reload the page.'; });
+    });
+    $('#cal-sync').textContent = 'Shared: every teammate sees the same runs live.';
+    $('#chk-mode').textContent = 'Shared: every tick shows who made it and when, live for the whole team.';
+    caps.db.collection('cal_runs').orderBy('at').onSnapshot(function (snap) {
+      cal.runs = snap.docs.map(function (d) { var o = Object.assign({}, d.data()); o.id = d.id; return o; });
+      renderCal();
+    }, function () { $('#cal-sync').textContent = 'Lost the connection to shared storage. Reload the page.'; });
+    caps.db.collection('checks').onSnapshot(function (snap) {
+      var st = {};
+      snap.docs.forEach(function (d) { st[d.id] = d.data(); });
+      chk.state = st;
+      renderChecks();
+    }, function () { $('#chk-mode').textContent = 'Lost the connection to shared storage. Reload the page.'; });
+  });
+})();
+
+</script>

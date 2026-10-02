@@ -1,0 +1,301 @@
+#!/usr/bin/env python3
+"""Post-run analysis for the LAM flow rig (reads files written by rig_console.py).
+
+  valve   TELEMETRY EVENTS   Task 2: valve position vs flow from 'MARK V25' ... 'MARK V100' segments
+  trend   TELEMETRY EVENTS   flow (L/min and mL/s) + totalised litres vs time, with state changes
+  dutymap TELEMETRY          P-02 duty plateaus -> Q = ffq0 + ffq1*d (FIC feed-forward)
+  step    TELEMETRY --t0 --t1  FOPDT fit of a P-02 duty step -> lambda-tuned FIC gains
+  burst   BURSTFILE --a --b    instantaneous flow from inter-pulse periods + spectrum (pump pulsation)
+
+All plots are written as PNG next to the input unless --out is given.
+"""
+import argparse
+import csv
+import os
+import re
+
+import numpy as np
+
+
+def read_tele(path):
+    with open(path, newline="") as f:
+        rows = list(csv.DictReader(f))
+    t = np.array([float(r["t_ms"]) / 1000 for r in rows])
+    t -= t[0]
+    cols = {k: np.array([_f(r[k]) for r in rows]) for k in rows[0] if k not in ("host_time", "state", "diag")}
+    cols["t"] = t
+    cols["state"] = [r["state"] for r in rows]
+    cols["diag"] = [r["diag"] for r in rows]
+    cols["_t0_ms"] = float(rows[0]["t_ms"])
+    return cols
+
+
+def _f(x):
+    try:
+        return float(x)
+    except ValueError:
+        return float("nan")
+
+
+def read_events(path, t0_ms):
+    out = []
+    with open(path, newline="") as f:
+        for r in csv.DictReader(f):
+            if r["t_ms"]:
+                out.append(((float(r["t_ms"]) - t0_ms) / 1000, r["tag"], r["text"]))
+    return out
+
+
+def outpath(args, src, suffix):
+    base = args.out or os.path.splitext(src)[0]
+    return f"{base}_{suffix}.png"
+
+
+def plt_setup():
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    plt.rcParams.update({"font.size": 9})
+    return plt
+
+
+def cmd_valve(args):
+    T = read_tele(args.telemetry)
+    ev = [e for e in read_events(args.events, T["_t0_ms"]) if e[1] == "MARK"]
+    allmarks, marks = [e[0] for e in ev], []
+    for t, _, text in ev:
+        m = re.search(r"(\d+(?:\.\d+)?)", text)
+        if m and text.upper().startswith("V"):
+            marks.append((t, float(m.group(1))))
+    if not marks:
+        raise SystemExit("no 'MARK V<percent>' events found")
+    t = T["t"]
+    rows = []
+    for ts, pos in marks:
+        later = [x for x in allmarks if x > ts]  # any MARK (e.g. 'MARK END') closes the segment
+        te = min(later[0] if later else t[-1], ts + args.max_seg)
+        steady = (t >= max(ts + args.settle, te - args.hold)) & (t < te)
+        seg = (t >= ts) & (t < te)
+        q = T["q_lpm"][steady]
+        if len(q) < 5:
+            continue
+        qa = T["q_lpm"][seg]
+        tt = t[seg] - ts
+        q0, q1 = (qa[0] if len(qa) else np.nan), float(np.mean(q))
+        tau = np.nan
+        if abs(q1 - q0) > 0.05:
+            target = q0 + 0.632 * (q1 - q0)
+            hit = np.where((qa - target) * np.sign(q1 - q0) >= 0)[0]
+            tau = float(tt[hit[0]]) if len(hit) else np.nan
+        rows.append((pos, q1, float(np.std(q)), float(np.mean(T["i2_a"][steady])), tau, ts, te))
+    print("\nTask 2  Valve position vs flow (steady window: last %.0f s of each setting)" % args.hold)
+    print("| Valve (% open, handle angle/90) | Flow (L/min) | Std (L/min) | CV (%) | Flow (mL/s) | P-02 current (A) | tau63 (s) |")
+    print("|---|---|---|---|---|---|---|")
+    for pos, q, sd, i2, tau, *_ in rows:
+        print(f"| {pos:.0f} | {q:.3f} | {sd:.3f} | {sd / q * 100 if q else 0:.1f} | {q * 1000 / 60:.1f} | {i2:.2f} | {tau:.1f} |")
+    plt = plt_setup()
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4.2))
+    srt = sorted(rows)
+    ax1.errorbar([r[0] for r in srt], [r[1] for r in srt], yerr=[2 * r[2] for r in srt], fmt="o-", capsize=3,
+                 label="FT-01 flow (±2σ)")
+    ax1.set_xlabel("BV-02 position (% of 90° handle travel)")
+    ax1.set_ylabel("flow (L/min)")
+    ax1.set_xlim(0, 105)
+    ax1.set_ylim(bottom=0)
+    ax1.grid(alpha=0.3)
+    axb = ax1.twinx()
+    axb.plot([r[0] for r in srt], [r[3] for r in srt], "s--", ms=4, color="0.45", label="P-02 current")
+    axb.set_ylabel("P-02 current (A)  ~ discharge pressure")
+    ax1.legend(loc="lower right", fontsize=8)
+    ax1.set_title("Installed characteristic with a positive-displacement pump")
+    ax2.plot(t, T["q_lpm"], lw=0.8)
+    for pos, q, sd, i2, tau, ts, te in rows:
+        ax2.axvspan(ts, te, alpha=0.06 if int(pos) % 2 else 0.12)
+        ax2.text((ts + te) / 2, np.nanmax(T["q_lpm"]) * 1.02, f"{pos:.0f}%", ha="center", fontsize=8)
+    ax2.set_xlabel("time (s)")
+    ax2.set_ylabel("flow (L/min)")
+    ax2.grid(alpha=0.3)
+    ax2.set_title("Flow vs time through the valve sequence")
+    fig.tight_layout()
+    p = outpath(args, args.telemetry, "valve")
+    fig.savefig(p, dpi=160)
+    print("plot:", p)
+
+
+def cmd_trend(args):
+    T = read_tele(args.telemetry)
+    ev = read_events(args.events, T["_t0_ms"]) if args.events else []
+    plt = plt_setup()
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(11, 6.5), sharex=True, gridspec_kw={"height_ratios": [3, 2]})
+    t = T["t"]
+    ax1.plot(t, T["q_mls"], lw=1, label="FT-01 flow (mL/s)")
+    ax1.set_ylabel("flow (mL/s)")
+    sec = ax1.secondary_yaxis("right", functions=(lambda x: x * 60 / 1000, lambda x: x * 1000 / 60))
+    sec.set_ylabel("L/min")
+    ax1.grid(alpha=0.3)
+    ax2.plot(t, T["v_c1_l"], label="Case 1 transferred to TK-01 (L)")
+    ax2.plot(t, T["v_c2_l"], label="Case 2 flush through FT-01 (L)")
+    ax2.plot(t, T["v_tot_l"], ":", label="total since ZERO (L)")
+    ax2.set_ylabel("litres")
+    ax2.set_xlabel("time (s)")
+    ax2.grid(alpha=0.3)
+    ax2.legend(fontsize=8)
+    ymax = np.nanmax(T["q_mls"]) if len(t) else 1
+    for te, tag, text in ev:
+        if tag in ("STATE", "TRIP", "FLUSH_EMPTY", "DIAG") and 0 <= te <= t[-1]:
+            ax1.axvline(te, lw=0.6, alpha=0.5)
+            label = text.split("->")[-1].split("(")[0].strip() if tag == "STATE" else tag
+            ax1.text(te, ymax * 1.03, label, rotation=90, fontsize=6, va="bottom")
+    ax1.set_ylim(0, ymax * 1.35 + 1)
+    fig.suptitle("Flow vs time and totalised volume returned to TK-01")
+    fig.tight_layout()
+    p = outpath(args, args.telemetry, "trend")
+    fig.savefig(p, dpi=160)
+    print("plot:", p)
+
+
+def plateaus(T, col, min_s=6.0):
+    d = np.round(T[col], 2)
+    t = T["t"]
+    out, start = [], 0
+    for i in range(1, len(d) + 1):
+        if i == len(d) or d[i] != d[start]:
+            if t[i - 1] - t[start] >= min_s and d[start] > 0.05:
+                keep = (t >= t[start] + min_s / 2) & (t <= t[i - 1])
+                out.append((float(d[start]), float(np.mean(T["q_lpm"][keep])), float(np.std(T["q_lpm"][keep]))))
+            start = i
+    return out
+
+
+def cmd_dutymap(args):
+    T = read_tele(args.telemetry)
+    if args.t0 is not None or args.t1 is not None:
+        w = (T["t"] >= (args.t0 or 0)) & (T["t"] <= (args.t1 if args.t1 is not None else T["t"][-1]))
+        T = {k: (v[w] if isinstance(v, np.ndarray) and len(v) == len(w) else v) for k, v in T.items()}
+    pts = plateaus(T, "d2")
+    if len(pts) < 2:
+        raise SystemExit("need at least two P-02 duty plateaus of 6 s or more")
+    d = np.array([p[0] for p in pts])
+    q = np.array([p[1] for p in pts])
+    q1, q0 = np.polyfit(d, q, 1)
+    print("| P-02 duty | flow (L/min) | std |\n|---|---|---|")
+    for p in pts:
+        print(f"| {p[0]:.2f} | {p[1]:.3f} | {p[2]:.3f} |")
+    print(f"\nQ = {q0:.3f} + {q1:.3f}*d   ->   SET ffq0 {q0:.3f}   SET ffq1 {q1:.3f}")
+    for target in (1.0, 3.0, 6.0):
+        dd = (target - q0) / q1
+        print(f"  duty for {target:.1f} L/min: {dd:.2f}" + ("  (beyond 100%: not reachable)" if dd > 1 else ""))
+
+
+def cmd_step(args):
+    T = read_tele(args.telemetry)
+    t = T["t"]
+    w = (t >= args.t0) & (t <= args.t1)
+    t, d, q = t[w], T["d2"][w], T["q_lpm"][w]
+    jumps = np.where(np.abs(np.diff(d)) > 0.02)[0]
+    if not len(jumps):
+        raise SystemExit("no duty step found in the window")
+    k = jumps[0] + 1
+    end = jumps[1] + 1 if len(jumps) > 1 else len(t)  # analyse one step only
+    t, d, q = t[:end], d[:end], q[:end]
+    ts = t[k]
+    d0, d1 = np.mean(d[:k]), d[-1]
+    q0 = np.mean(q[max(0, k - 20):k])
+    q1 = np.mean(q[-max(5, (end - k) // 5):])
+    K = (q1 - q0) / (d1 - d0)
+    rel = (q - q0) / (q1 - q0)
+    after = t >= ts
+    t5 = t[after][np.argmax(rel[after] >= 0.05)] - ts
+    t63 = t[after][np.argmax(rel[after] >= 0.632)] - ts
+    theta = max(t5, 0.0)
+    tau = max(t63 - theta, 0.05)
+    lam = max(tau, 2 * theta, 0.5)
+    kc = tau / (K * (lam + theta))
+    print(f"FOPDT: K = {K:.2f} L/min per unit duty, theta = {theta:.2f} s, tau = {tau:.2f} s (100 ms telemetry)")
+    print(f"lambda = {lam:.2f} s  ->  SET kc {kc:.4f}   SET ti {tau:.2f}")
+    plt = plt_setup()
+    fig, ax = plt.subplots(figsize=(7, 3.5))
+    ax.plot(t - ts, q, label="measured")
+    tm = np.linspace(0, t[-1] - ts, 200)
+    model = q0 + (q1 - q0) * np.where(tm > theta, 1 - np.exp(-(tm - theta) / tau), 0)
+    ax.plot(tm, model, "--", label="FOPDT fit")
+    ax.set_xlabel("time after step (s)")
+    ax.set_ylabel("flow (L/min)")
+    ax.grid(alpha=0.3)
+    ax.legend()
+    fig.tight_layout()
+    p = outpath(args, args.telemetry, "step")
+    fig.savefig(p, dpi=160)
+    print("plot:", p)
+
+
+def cmd_burst(args):
+    with open(args.burstfile) as f:
+        per = np.array([float(x) for x in f.read().split() if x.strip()])
+    per = per[(per > 0) & (per < 1e6)]
+    tt = np.cumsum(per) / 1e6
+    fi = 1e6 / per
+    qi = args.a * fi + args.b
+    fs = 1.0 / np.median(per / 1e6)
+    grid = np.arange(tt[0], tt[-1], 1 / fs)
+    qg = np.interp(grid, tt, qi)
+    x = qg - np.mean(qg)
+    spec = np.abs(np.fft.rfft(x * np.hanning(len(x))))
+    fr = np.fft.rfftfreq(len(x), 1 / fs)
+    band = fr > 2
+    fpk = fr[band][np.argmax(spec[band])]
+    print(f"mean flow {np.mean(qi):.3f} L/min, ripple std {np.std(qi) / np.mean(qi) * 100:.1f}% "
+          f"(peak-to-peak {np.ptp(qi) / np.mean(qi) * 100:.0f}%), dominant pulsation {fpk:.1f} Hz "
+          f"(Nyquist {fs / 2:.0f} Hz at the pulse rate)")
+    plt = plt_setup()
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 3.8))
+    ax1.plot(tt - tt[0], qi, lw=0.7)
+    ax1.set_xlabel("time (s)")
+    ax1.set_ylabel("instantaneous flow (L/min)")
+    ax1.grid(alpha=0.3)
+    ax2.plot(fr, spec, lw=0.8)
+    ax2.set_xlabel("frequency (Hz)")
+    ax2.set_ylabel("|FFT|")
+    ax2.axvline(fpk, ls="--", lw=0.8)
+    ax2.grid(alpha=0.3)
+    fig.suptitle("Pulse-by-pulse flow: what the 'steady' 3 L/min really looks like")
+    fig.tight_layout()
+    p = outpath(args, args.burstfile, "burst")
+    fig.savefig(p, dpi=160)
+    print("plot:", p)
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    sub = ap.add_subparsers(dest="cmd", required=True)
+    v = sub.add_parser("valve")
+    v.add_argument("telemetry")
+    v.add_argument("events")
+    v.add_argument("--settle", type=float, default=10)
+    v.add_argument("--hold", type=float, default=30)
+    v.add_argument("--max-seg", type=float, default=180, help="longest segment to consider, s")
+    tr = sub.add_parser("trend")
+    tr.add_argument("telemetry")
+    tr.add_argument("events", nargs="?")
+    dm = sub.add_parser("dutymap")
+    dm.add_argument("telemetry")
+    dm.add_argument("--t0", type=float)
+    dm.add_argument("--t1", type=float)
+    st = sub.add_parser("step")
+    st.add_argument("telemetry")
+    st.add_argument("--t0", type=float, required=True)
+    st.add_argument("--t1", type=float, required=True)
+    bu = sub.add_parser("burst")
+    bu.add_argument("burstfile")
+    bu.add_argument("--a", type=float, default=1 / 98)
+    bu.add_argument("--b", type=float, default=0.0)
+    for p in (v, tr, dm, st, bu):
+        p.add_argument("--out")
+    args = ap.parse_args()
+    {"valve": cmd_valve, "trend": cmd_trend, "dutymap": cmd_dutymap, "step": cmd_step, "burst": cmd_burst}[args.cmd](args)
+
+
+if __name__ == "__main__":
+    main()

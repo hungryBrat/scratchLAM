@@ -1,0 +1,256 @@
+#!/usr/bin/env python3
+"""Live console for the LAM flow rig.
+
+Logs every frame the ESP32 sends to runs/<stamp>_telemetry.csv (+ events, calibration
+and burst files) and plots live trends. Type firmware commands in the terminal and
+press Enter (START, STOP, MARK V50, CAL 60 80, SET a 0.0101, SAVE, ...).
+
+  pip install pyserial matplotlib
+  python rig_console.py --port COM5            # Windows
+  python rig_console.py --port /dev/ttyUSB0    # Linux
+  python rig_console.py --replay runs/x_telemetry.csv   # no hardware
+"""
+import argparse
+import collections
+import csv
+import datetime as dt
+import os
+import queue
+import sys
+import threading
+import time
+
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+
+WINDOW_S = 180
+NUMERIC_SKIP = {"state", "diag"}
+
+
+def stamp():
+    return dt.datetime.now().strftime("%Y%m%d_%H%M%S")
+
+
+class Store:
+    def __init__(self, outdir):
+        os.makedirs(outdir, exist_ok=True)
+        s = stamp()
+        self.paths = {k: os.path.join(outdir, f"{s}_{k}.csv") for k in ("telemetry", "events", "cal")}
+        self.burst_path = os.path.join(outdir, f"{s}_burst.txt")
+        self.fields = None
+        self.tele = None
+        self.events = open(self.paths["events"], "w", newline="")
+        self.ev_w = csv.writer(self.events)
+        self.ev_w.writerow(["host_time", "t_ms", "tag", "text"])
+        self.cal = open(self.paths["cal"], "w", newline="")
+        self.cal_w = csv.writer(self.cal)
+        self.cal_w.writerow(["run", "pulses", "time_s", "f_hz", "duty", "mass_g", "note"])
+        self.series = collections.defaultdict(lambda: collections.deque(maxlen=WINDOW_S * 10 + 50))
+        self.last = {}
+        self.recent_events = collections.deque(maxlen=5)
+        self.t0 = None
+
+    def header(self, fields):
+        self.fields = fields
+        if self.tele is None:
+            self.tele = open(self.paths["telemetry"], "w", newline="")
+            self.tele_w = csv.writer(self.tele)
+            self.tele_w.writerow(["host_time"] + fields)
+
+    def frame(self, values, host_time):
+        if not self.fields or len(values) != len(self.fields):
+            return
+        self.tele_w.writerow([host_time] + values)
+        row = dict(zip(self.fields, values))
+        t = float(row["t_ms"]) / 1000.0
+        if self.t0 is None or t < self.t0:
+            self.t0 = t
+            for d in self.series.values():
+                d.clear()
+        self.series["t"].append(t - self.t0)
+        for k, v in row.items():
+            if k in NUMERIC_SKIP or k == "t_ms":
+                continue
+            try:
+                self.series[k].append(float(v))
+            except ValueError:
+                self.series[k].append(float("nan"))
+        self.last = row
+
+    def flush(self):
+        for f in (self.tele, self.events, self.cal):
+            if f:
+                f.flush()
+
+
+def reader(ser, q, stop):
+    while not stop.is_set():
+        try:
+            raw = ser.readline()
+        except Exception as e:  # unplugged cable, etc.
+            q.put(("ERR", str(e)))
+            time.sleep(1)
+            continue
+        if raw:
+            q.put(("LINE", raw.decode("utf-8", "replace").strip()))
+
+
+def replayer(path, q, stop, speed):
+    with open(path, newline="") as f:
+        rows = list(csv.reader(f))
+    fields = rows[0][1:]
+    q.put(("LINE", "H," + ",".join(fields)))
+    prev = None
+    for r in rows[1:]:
+        if stop.is_set():
+            return
+        t = float(r[1]) / 1000.0
+        if prev is not None:
+            time.sleep(max(0.0, (t - prev) / speed))
+        prev = t
+        q.put(("LINE", "D," + ",".join(r[1:])))
+
+
+def keyboard(ser, store, stop):
+    for line in sys.stdin:
+        cmd = line.strip()
+        if not cmd:
+            continue
+        if ser is None:
+            print("(replay mode: command not sent)")
+            continue
+        ser.write((cmd + "\n").encode())
+        store.ev_w.writerow([dt.datetime.now().isoformat(timespec="milliseconds"), "", "CMD", cmd])
+        if stop.is_set():
+            return
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--port")
+    ap.add_argument("--baud", type=int, default=115200)
+    ap.add_argument("--out", default="runs")
+    ap.add_argument("--replay", help="telemetry CSV written by this tool")
+    ap.add_argument("--speed", type=float, default=1.0, help="replay speed factor")
+    args = ap.parse_args()
+    if not args.port and not args.replay:
+        ap.error("give --port or --replay")
+
+    store = Store(args.out)
+    q = queue.Queue()
+    stop = threading.Event()
+    ser = None
+    if args.replay:
+        threading.Thread(target=replayer, args=(args.replay, q, stop, args.speed), daemon=True).start()
+    else:
+        import serial  # pyserial
+
+        ser = serial.Serial(args.port, args.baud, timeout=0.2)
+        time.sleep(0.3)
+        ser.write(b"HDR\n")
+        threading.Thread(target=reader, args=(ser, q, stop), daemon=True).start()
+    threading.Thread(target=keyboard, args=(ser, store, stop), daemon=True).start()
+    print(f"logging to {store.paths['telemetry']}")
+
+    plt.rcParams.update({"font.size": 9})
+    fig, axes = plt.subplots(4, 1, figsize=(11, 8.5), sharex=True, gridspec_kw={"height_ratios": [3, 2, 2, 2]})
+    ax_q, ax_v, ax_i, ax_d = axes
+    lines = {
+        "q_lpm": ax_q.plot([], [], lw=1.6, label="FT-01 flow (L/min)")[0],
+        "sp": ax_q.plot([], [], "--", lw=1, label="set point")[0],
+        "v_tot_l": ax_v.plot([], [], lw=1.4, label="total (L)")[0],
+        "v_c1_l": ax_v.plot([], [], lw=1, label="Case 1 (L)")[0],
+        "v_c2_l": ax_v.plot([], [], lw=1, label="Case 2 (L)")[0],
+        "i1_a": ax_i.plot([], [], lw=1, label="P-01")[0],
+        "i2_a": ax_i.plot([], [], lw=1, label="P-02")[0],
+        "i3_a": ax_i.plot([], [], lw=1, label="P-03")[0],
+        "d1": ax_d.plot([], [], lw=1, label="P-01 duty")[0],
+        "d2": ax_d.plot([], [], lw=1, label="P-02 duty")[0],
+        "d3": ax_d.plot([], [], lw=1, label="P-03 duty")[0],
+        "lsh": ax_d.step([], [], where="post", lw=1, label="LS-01 high")[0],
+        "sov": ax_d.step([], [], where="post", lw=1, label="SOV-01 open")[0],
+    }
+    sec = ax_q.secondary_yaxis("right", functions=(lambda x: x * 1000 / 60, lambda x: x * 60 / 1000))
+    sec.set_ylabel("mL/s")
+    ax_q.set_ylabel("L/min")
+    ax_v.set_ylabel("litres")
+    ax_i.set_ylabel("pump current (A)")
+    ax_d.set_ylabel("duty / state")
+    ax_d.set_xlabel("time (s)")
+    ax_d.set_ylim(-0.05, 1.15)
+    for a in axes:
+        a.grid(alpha=0.3)
+        a.legend(loc="upper left", fontsize=7, ncol=5)
+    title = fig.suptitle("waiting for data...", fontsize=10, family="monospace")
+    ev_text = fig.text(0.01, 0.005, "", fontsize=7, family="monospace", va="bottom")
+    fig.tight_layout(rect=(0, 0.04, 1, 0.96))
+
+    def drain():
+        while True:
+            try:
+                kind, payload = q.get_nowait()
+            except queue.Empty:
+                return
+            now = dt.datetime.now().isoformat(timespec="milliseconds")
+            if kind == "ERR":
+                print("serial error:", payload)
+                continue
+            parts = payload.split(",")
+            tag = parts[0]
+            if tag == "H":
+                store.header(parts[1:])
+            elif tag == "D":
+                store.frame(parts[1:], now)
+            elif tag == "E" and len(parts) >= 4:
+                text = ",".join(parts[3:])
+                store.ev_w.writerow([now, parts[1], parts[2], text])
+                store.recent_events.append(f"{float(parts[1]) / 1000:8.1f}s {parts[2]:<11} {text}")
+                print(f"[{parts[2]}] {text}")
+            elif tag == "C" and len(parts) >= 7:
+                store.cal_w.writerow([parts[2], parts[3], parts[4], parts[5], parts[6], "", ""])
+                print(f"\n*** CAL run {parts[2]}: pulses={parts[3]} t={parts[4]} s f={parts[5]} Hz duty={parts[6]}"
+                      f" -> weigh the bucket and enter the mass in {store.paths['cal']}\n")
+            elif tag == "B":
+                with open(store.burst_path, "a") as f:
+                    f.write("\n".join(parts[1:]) + "\n")
+            elif tag in ("P", "I"):
+                print(payload)
+
+    def update(_):
+        drain()
+        s = store.series
+        if not s["t"]:
+            return list(lines.values())
+        t = list(s["t"])
+        for k, ln in lines.items():
+            if k in s and len(s[k]) == len(t):
+                ln.set_data(t, list(s[k]))
+        tmax = t[-1]
+        for a in axes:
+            a.set_xlim(max(0, tmax - WINDOW_S), max(10, tmax))
+        for a, keys in ((ax_q, ["q_lpm", "sp"]), (ax_v, ["v_tot_l", "v_c1_l", "v_c2_l"]), (ax_i, ["i1_a", "i2_a", "i3_a"])):
+            vals = [v for k in keys for v in list(s[k])[-WINDOW_S * 10:] if v == v]
+            if vals:
+                lo, hi = min(vals), max(vals)
+                a.set_ylim(min(0, lo), hi * 1.15 + 0.1)
+        L = store.last
+        title.set_text(
+            f"{L.get('state', '?'):<14} flow {float(L.get('q_lpm', 0)):5.2f} L/min = {float(L.get('q_mls', 0)):5.1f} mL/s"
+            f"   V {float(L.get('v_tot_l', 0)):6.3f} L   diag {L.get('diag', '?')}   alarms 0x{int(float(L.get('alarms', 0))):X}"
+        )
+        ev_text.set_text("\n".join(store.recent_events))
+        store.flush()
+        return list(lines.values())
+
+    anim = FuncAnimation(fig, update, interval=200, cache_frame_data=False)  # noqa: F841 (kept alive)
+    try:
+        plt.show()
+    finally:
+        stop.set()
+        store.flush()
+        if ser:
+            ser.close()
+
+
+if __name__ == "__main__":
+    main()
